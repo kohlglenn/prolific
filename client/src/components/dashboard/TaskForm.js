@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import {getTasks, createTask} from '../../actions/taskActions';
+import {getTasks, createTask, updateTask, deleteTask} from '../../actions/taskActions';
 import '../../tailwind.css';
+import { FaEraser } from "react-icons/fa";
 
 
 class TaskForm extends Component {
@@ -56,12 +57,16 @@ render() {
     let taskList = tasks 
     ? tasks.map((t, i) => {
         return (
-            <li key={i}>{t.title}</li>
+            <li key={i}>
+              <div className="">
+                {t.title}<FaEraser className="inline-block" onClick={()=> alert('clicked')} />
+              </div>
+            </li>
         );
     })
     : [];
 return (
-      <div className="bg-red-300">
+      <div className="bg-gray-200 p-2">
           <form onSubmit={this.createTask}>
               <input 
               required 
@@ -93,5 +98,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  { getTasks, createTask }
+  { getTasks, createTask, updateTask, deleteTask }
 )(TaskForm);

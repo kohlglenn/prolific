@@ -24,22 +24,22 @@ import {
           tasks: action.payload,
           tasksLoading: false
         };
-    //   case UPDATE_TASK:
-    //     let index = state.tasks.findIndex(
-    //       task => task._id === action.payload._id
-    //     );
+      case UPDATE_TASK:
+        let index = state.tasks.findIndex(
+          task => task._id === action.payload._id
+        );
   
-    //     state.tasks.splice(index, 1);
+        state.tasks.splice(index, 1);
   
-    //     return {
-    //       ...state,
-    //       tasks: [action.payload, ...state.tasks]
-    //     };
-    //   case DELETE_TASK:
-    //     return {
-    //       ...state,
-    //       tasks: state.tasks.filter(task => task._id !== action.payload)
-    //     };
+        return {
+          ...state,
+          tasks: [action.payload, ...state.tasks]
+        };
+      case DELETE_TASK:
+        return {
+          ...state,
+          tasks: state.tasks.filter(task => task._id !== action.payload)
+        };
       case TASKS_LOADING:
         return {
           ...state,

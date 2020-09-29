@@ -46,4 +46,38 @@ router.post(
     }
   );
 
+// @route POST api/tasks/delete
+// @desc Delete an existing task
+// @access Private
+router.delete(
+  "/delete/:id",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    Task.findById(req.params.id).then(task => {
+      task.remove().then(() => res.json({ success: true }));
+    });
+  }
+);
+
+// @route PATCH api/tasks/update
+// @desc Update an existing task
+// @access Private
+router.patch(
+  "/update",
+  passport.authenticate("jwt", { session: false }),
+  (req, res) => {
+    console.log(req.body);
+
+    // Task.findOneAndUpdate(
+    //   { _id: req.body.id },
+    //   { $set: taskFields },
+    //   { new: true }
+    // )
+    //   .then(task => {
+    //     res.json(task);
+    //   })
+    //   .catch(err => console.log(err));
+  }
+);
+
 module.exports = router;
