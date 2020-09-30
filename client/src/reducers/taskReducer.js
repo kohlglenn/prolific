@@ -16,7 +16,7 @@ import {
       case CREATE_TASK:
         return {
           ...state,
-          tasks: [action.payload, ...state.tasks]
+          tasks: [...state.tasks, action.payload]
         };
       case GET_TASKS:
         return {
