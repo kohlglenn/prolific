@@ -1,5 +1,5 @@
-// need to update enums in Task.js if these are changed as well
-export const bucket = {
+// make sure to update front-end constant as well
+const bucket = {
     NONE: 'None',
     TODO: 'Todo', 
     RECURRING: 'Recurring', 
@@ -7,13 +7,18 @@ export const bucket = {
     BLOCKED: 'Blocked', 
     DONE: 'Done'
 };
-export const progress = {
+const progress = {
     NONE: 'None', 
     INPROGRESS: 'In Progress', 
     DONE: 'Done'
 };
-export const priority = {
+const priority = {
     LOW: 'Low', 
     MEDIUM: 'Medium', 
     HIGH: 'High'
 };
+
+module.exports = Enum = {
+    bucket: bucket, 
+    progress: progress, 
+    priority: priority};

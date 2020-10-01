@@ -1,22 +1,4 @@
-// can't import from ./Enum because this is not a module? I don't know how to fix that
-const bucket = {
-    NONE: 'None',
-    TODO: 'Todo', 
-    RECURRING: 'Recurring', 
-    INPROGRESS: 'In Progress', 
-    BLOCKED: 'Blocked', 
-    DONE: 'Done'
-};
-const progress = {
-    NONE: 'None', 
-    INPROGRESS: 'In Progress', 
-    DONE: 'Done'
-};
-const priority = {
-    LOW: 'Low', 
-    MEDIUM: 'Medium', 
-    HIGH: 'High'
-};
+const { bucket, progress, priority } = require('./Enum');
 
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
