@@ -1,3 +1,3 @@
 export const COLORS = {
-    grey: "#e9e9e9"
+    gray: "#e9e9e9"
 };

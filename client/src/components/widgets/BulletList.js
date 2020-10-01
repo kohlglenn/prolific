@@ -1,27 +1,16 @@
 import React, { Component } from "react";
-import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import {getTasks, createTask, updateTask, deleteTask} from '../../actions/taskActions';
-import '../../tailwind.css';
-import { FaEraser } from "react-icons/fa";
-import { BiEdit } from "react-icons/bi";
-import OpacityButton from "../button/OpacityButton";
+import {getTasks, updateTask, deleteTask} from '../../actions/taskActions';
 
-// Make a clickable icon component that has an opacity change
+import { AiOutlinePlus } from "react-icons/ai";
+import { BiEdit } from "react-icons/bi";
+import { FaEraser } from "react-icons/fa";
+import OpacityButton from "../button/OpacityButton";
+import CreateTaskModal from "./CreateTaskModal";
 
 class BulletList extends Component {
     state = {
-        title: "",
-        group: "",
-        owner: "",
-        assigned: "",
-        bucket: "",
-        progress: "",
-        priority: "",
-        startDate: "",
-        dueDate: "",
-        notes: "",
-        subtasks: [],
+        createTask: true,
         editMode: "",
         eTitle: "",
         eGroup: "",
@@ -44,12 +33,6 @@ class BulletList extends Component {
     onChange = e => {
         this.setState({[e.target.id]: e.target.value});
       };
-    
-    createTask = e => {
-        e.preventDefault();
-        this.props.createTask(this.state);
-        this.resetState();
-    };
 
     deleteTask = t => {
       this.props.deleteTask(t._id);
@@ -61,17 +44,18 @@ class BulletList extends Component {
 
     resetState = () => {
         this.setState({
-            title: "",
-            group: "",
-            owner: "",
-            assigned: "",
-            bucket: "",
-            progress: "",
-            priority: "",
-            startDate: "",
-            dueDate: "",
-            notes: "",
-            subtasks: []
+          editMode: "",
+          eTitle: "",
+          eGroup: "",
+          eOwner: "",
+          eAssigned: "",
+          eBucket: "",
+          eProgress: "",
+          ePriority: "",
+          eStartDate: "",
+          eDueDate: "",
+          eNotes: "",
+          eSubtasks: []
         });
     }
 
@@ -81,7 +65,7 @@ class BulletList extends Component {
 
 render() {
     const { tasks, tasksLoading } = this.props.tasks;
-    const { editMode } = this.state;
+    const { editMode, createTask } = this.state;
     let taskList = tasks 
     ? tasks.map((t, i) => {
         return (
@@ -119,21 +103,21 @@ render() {
     })
     : [];
 return (
-      <div className="bg-gray-200 p-2">
-          <form onSubmit={this.createTask}>
-              <input 
-              required 
-              onChange={this.onChange} 
-              value={this.state.title}
-              id="title"
-              />
-              <button type="submit">
-              Create Task
-            </button>
-          </form>
-          <ul>
-            {tasksLoading ? <li>loading...</li> : taskList}
-          </ul>
+      <div className="bg-gray-200 flex flex-col">
+        {createTask
+        ?
+        <CreateTaskModal state={this.state} setParentState={this.setState}/>
+        :
+        null}
+        <button 
+        className="w-auto m-2 hover:opacity-50 border-2 border-gray-800 flex rounded-md place-items-center"
+        onClick={() => this.setState({...this.state, createTask: true})}>
+          < AiOutlinePlus size={22} className="ml-1"/>
+          <span className="mx-2">Create Task</span>
+        </button>
+        <ul className="m-2">
+          {tasksLoading ? <li>loading...</li> : taskList}
+        </ul>
       </div>
     );
   }
@@ -151,5 +135,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  { getTasks, createTask, updateTask, deleteTask }
+  { getTasks, updateTask, deleteTask }
 )(BulletList);

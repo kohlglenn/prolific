@@ -4,30 +4,21 @@ import { Link } from "react-router-dom";
 
 class Header extends Component {
   state = {
-    isAuthenticated: false
+    name: ""
   };
 
   componentDidMount() {
-    const { isAuthenticated } = this.props.auth;
-    if (isAuthenticated) {
-      const { user } = this.props.auth;
-      this.setState({...this.state, isAuthenticated: isAuthenticated, user: user});
-    }
+      const { name } = this.props.auth.user;
+      this.setState({...this.state, name: name});
   }
 
   
   render() {
     return (
       <div>
-        {this.state.isAuthenticated
-        ?
-        <div className="inline-block">
-          <h4>{`Hello, ${this.state.user.name}`}</h4>
+        <div className="inline-block ml-4">
+          <span className="text-lg">Hey there, <span className="font-bold">{`${this.state.name}`}</span>!</span>
         </div>
-        :
-        <div>
-        </div>
-        }
       </div>
     );
   }

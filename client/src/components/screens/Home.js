@@ -2,8 +2,10 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { logoutUser } from "../../actions/authActions";
+
 import BulletList from "../widgets/BulletList";
 import NavBar from "../widgets/NavBar";
+import Header from "../widgets/Header";
 
 class Dashboard extends Component {
   
@@ -14,6 +16,7 @@ class Dashboard extends Component {
       <div className="inline-flex">
         <NavBar />
         <div>
+          <Header />
           <BulletList user={this.props.auth.user} />
         </div>
       </div>
