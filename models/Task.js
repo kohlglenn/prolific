@@ -1,3 +1,23 @@
+// can't import from ./Enum because this is not a module? I don't know how to fix that
+const bucket = {
+    NONE: 'None',
+    TODO: 'Todo', 
+    RECURRING: 'Recurring', 
+    INPROGRESS: 'In Progress', 
+    BLOCKED: 'Blocked', 
+    DONE: 'Done'
+};
+const progress = {
+    NONE: 'None', 
+    INPROGRESS: 'In Progress', 
+    DONE: 'Done'
+};
+const priority = {
+    LOW: 'Low', 
+    MEDIUM: 'Medium', 
+    HIGH: 'High'
+};
+
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 // Create Schema. 
@@ -21,24 +41,21 @@ TaskSchema.add({
         ref: "users"
     },
     bucket: {
-        // TODO: Refactor out enum
         type: String,
-        enum: ['None','Todo', 'Recurring', 'In Progress', 'Blocked', 'Done'],
-        default: 'None',
+        enum: Object.values(bucket),
+        default: bucket.NONE,
         required: true
     },
     progress: {
-        // TODO: Refactor out enum
         type: String,
-        enum: ['None', 'In Progress', 'Done'],
-        default: 'None',
+        enum: Object.values(progress),
+        default: progress.NONE,
         required: true
     },
     priority: {
-        // TODO: Refactor out enum
         type: String,
-        enum: ['Low', 'Medium', 'High'],
-        default: 'Medium',
+        enum: Object.values(priority),
+        default: priority.MEDIUM,
         required: true
     },
     startDate: {
