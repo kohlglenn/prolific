@@ -11,19 +11,20 @@ class PriorityIcon extends Component {
         switch(p) {
             case priority.LOW:
                 return (
-                    <FiBarChart className="transform scale-x-flip-x bg-b" size={20} color={COLORS.blue500} />
+                    <FiBarChart size={20} color={COLORS.blue500}  {...this.props}
+                    className={`transform scale-x-flip-x ${this.props.className ? this.props.className : ""}`} />
                 );
             case priority.MEDIUM:
                 return (
-                    <FiBarChart2 size={20} color={COLORS.orange500} />
+                    <FiBarChart2 size={20} color={COLORS.orange500}  {...this.props} />
                 );
             case priority.HIGH:
                 return (
-                    <FiBarChart size={20} color={COLORS.red500} />
+                    <FiBarChart size={20} color={COLORS.red500}  {...this.props} />
                 );
             default:
                 return (
-                    <FiBarChart2 size={20} color={COLORS.orange500} />
+                    <FiBarChart2 size={20} color={COLORS.orange500}  {...this.props} />
                 );
         }
     }

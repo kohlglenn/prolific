@@ -13,11 +13,12 @@ class ProgressIcon extends Component {
         switch(p) {
             case progress.NONE:
                 return (
-                    <BsCircle size={20} color={"blue"} {...this.props} />
+                    <BsCircle size={20} color={"blue"}  {...this.props} />
                 );
             case progress.INPROGRESS:
                 return (
-                    <BsCircleHalf className="transform rotate-90" size={20} color={"blue"} {...this.props} />
+                    <BsCircleHalf size={20} color={"blue"} {...this.props} 
+                    className={`transform rotate-90 ${this.props.className ? this.props.className : ""}`} />
                 );
             case progress.DONE:
                 return (

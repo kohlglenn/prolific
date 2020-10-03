@@ -26,9 +26,9 @@ class Header extends Component {
     render() {
         return (
             <div
-            style={{'border-top-right-radius': '1.5rem'}}
-            class="flex h-screen bg-gray-800 w-64 flex-col justify-between p-2">
-                <div class="p-2">
+            style={{borderTopRightRadius: '1.5rem'}}
+            className="flex h-screen bg-gray-800 w-64 flex-col justify-between p-2">
+                <div className="p-2">
                     <div
                         className="flex flex-row-reverse justify-items-end hover:opacity-50">
                         <button>
@@ -73,7 +73,7 @@ class Header extends Component {
                         </ul>
                     </div>
                 </div>
-                <div class="">
+                <div className="">
                     <button className="pb-10 p-2 hover:opacity-50"
                         style={{ color: COLORS.gray }}
                         onClick={this.onLogoutClick}>

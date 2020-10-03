@@ -4,13 +4,15 @@ import {getTasks, updateTask, deleteTask} from '../../actions/taskActions';
 
 import { AiOutlinePlus } from "react-icons/ai";
 import { BiEdit } from "react-icons/bi";
-import { FaEraser } from "react-icons/fa";
+import { FaEraser, FaThList } from "react-icons/fa";
 import OpacityButton from "../button/OpacityButton";
-import CreateTaskModal from "./CreateTaskModal";
+import TaskModal from "./TaskModal";
+import PriorityIcon from "./PriorityIcon";
+import ProgressIcon from "./ProgressIcon";
 
 class BulletList extends Component {
     state = {
-        createTask: true,
+        createTask: false,
         editMode: "",
         eTitle: "",
         eGroup: "",
@@ -27,11 +29,11 @@ class BulletList extends Component {
 
     componentDidMount() {
         this.props.getTasks(this.props.auth.user.id);
-        this.setState({owner: this.props.auth.user.id});
+        this.setState({...this.state, owner: this.props.auth.user.id});
     }
 
     onChange = e => {
-        this.setState({[e.target.id]: e.target.value});
+        this.setState({...this.state, [e.target.id]: e.target.value});
       };
 
     deleteTask = t => {
@@ -58,10 +60,51 @@ class BulletList extends Component {
           eSubtasks: []
         });
     }
+  
+  
 
   startEdit = t => {
     this.setState({...this.state, editMode: t._id, eTitle: t.title})
   };
+
+  closeModal = () => {
+    this.setState({...this.state, createTask: false});
+  }
+
+  renderTaskRow = t => {
+    // TODO: finish me
+    return (
+      <tr key={t._id}>
+        <td>{t.title}</td>
+        <td>{t.group}</td>
+        <td>{t.owner}</td>
+        <td>{t.assigned}</td>
+        <td>{t.bucket}</td>
+        <td><ProgressIcon progress={t.progress} /></td>
+        <td><PriorityIcon priority={t.priority} /></td>
+        <td>{t.startDate}</td>
+        <td>{t.dueDate}</td>
+      </tr>
+    );
+  }
+
+  renderTaskHeader = () => {
+    return (
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Group</th>
+          <th>Owner</th>
+          <th>Assigned</th>
+          <th>Bucket</th>
+          <th>Progress</th>
+          <th>Priority</th>
+          <th>Start Date</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+    );
+  }
 
 render() {
     const { tasks, tasksLoading } = this.props.tasks;
@@ -69,55 +112,31 @@ render() {
     let taskList = tasks 
     ? tasks.map((t, i) => {
         return (
-            <li key={i}>
-              {editMode && editMode === t._id 
-              ? 
-              <div>
-                <input 
-                  required 
-                  onChange={this.onChange} 
-                  value={this.state.eTitle}
-                  id="eTitle"
-                  type="text"
-                  />
-              </div>
-              : 
-              <div className="">
-                {t.title}
-                <OpacityButton>
-                  <FaEraser 
-                  className="inline-block" 
-                  onClick={() => this.deleteTask(t)} 
-                  size={16}/>
-                </OpacityButton>
-                <OpacityButton>
-                  <BiEdit 
-                  className="inline-block" 
-                  onClick={() => this.startEdit(t)} 
-                  size={20}/>
-                </OpacityButton>
-              </div>}
-              
-            </li>
+          this.renderTaskRow(t)
         );
     })
     : [];
+
+
 return (
-      <div className="bg-gray-200 flex flex-col">
+      <div className=" flex flex-col">
         {createTask
         ?
-        <CreateTaskModal state={this.state} setParentState={this.setState}/>
+        <TaskModal create={true} state={this.state} closeModal={this.closeModal}/>
         :
         null}
         <button 
-        className="w-auto m-2 hover:opacity-50 border-2 border-gray-800 flex rounded-md place-items-center"
+        className="mr-4 mb-2 bg-transparent hover:bg-gray-700 border-2 border-gray-800 text-gray-800 rounded-lg hover:text-white hover:border-transparent flex place-items-center w-32"
         onClick={() => this.setState({...this.state, createTask: true})}>
           < AiOutlinePlus size={22} className="ml-1"/>
           <span className="mx-2">Create Task</span>
         </button>
-        <ul className="m-2">
-          {tasksLoading ? <li>loading...</li> : taskList}
-        </ul>
+        <table className="m-2">
+          {this.renderTaskHeader()}
+          {tasksLoading 
+          ? <tr><td>loading...</td></tr> 
+          : <tbody>{taskList}</tbody>}
+        </table>
       </div>
     );
   }

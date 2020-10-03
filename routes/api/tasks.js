@@ -39,7 +39,7 @@ router.post(
         notes: req.body.notes ? req.body.notes : undefined,
         subtasks: req.body.subtasks ? req.body.subtasks : undefined
       });
-  
+
       NEW_TASK.save()
         .then(task => res.json(task))
         .catch(err => console.log(err));
