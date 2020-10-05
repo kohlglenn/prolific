@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import {getTasks, updateTask, deleteTask} from '../../actions/taskActions';
+import { COLORS } from '../constants';
 
-import { AiOutlinePlus } from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { BiEdit } from "react-icons/bi";
 import { FaEraser, FaThList } from "react-icons/fa";
 import OpacityButton from "../button/OpacityButton";
@@ -13,18 +14,9 @@ import ProgressIcon from "./ProgressIcon";
 class BulletList extends Component {
     state = {
         createTask: false,
-        editMode: "",
-        eTitle: "",
-        eGroup: "",
-        eOwner: "",
-        eAssigned: "",
-        eBucket: "",
-        eProgress: "",
-        ePriority: "",
-        eStartDate: "",
-        eDueDate: "",
-        eNotes: "",
-        eSubtasks: []
+        editTask: false, 
+        owner: "",
+        task: undefined
     };
 
     componentDidMount() {
@@ -39,51 +31,40 @@ class BulletList extends Component {
     deleteTask = t => {
       this.props.deleteTask(t._id);
     };
-    
-    editTask = t => {
-      // TODO
-    }
 
     resetState = () => {
         this.setState({
-          editMode: "",
-          eTitle: "",
-          eGroup: "",
-          eOwner: "",
-          eAssigned: "",
-          eBucket: "",
-          eProgress: "",
-          ePriority: "",
-          eStartDate: "",
-          eDueDate: "",
-          eNotes: "",
-          eSubtasks: []
+          ...this.state,
+          createTask: false,
+          editTask: false, 
+          task: undefined
         });
     }
   
   
 
   startEdit = t => {
-    this.setState({...this.state, editMode: t._id, eTitle: t.title})
+    this.setState({...this.state, editTask: true, task: t})
   };
 
   closeModal = () => {
-    this.setState({...this.state, createTask: false});
+    this.setState({...this.state, createTask: false, editTask: false});
   }
 
   renderTaskRow = t => {
-    // TODO: finish me
     return (
       <tr key={t._id}>
+        <td><ProgressIcon progress={t.progress} /></td>
         <td>{t.title}</td>
         <td>{t.group}</td>
-        <td>{t.owner}</td>
+        {/* <td>{t.owner}</td> */}
         <td>{t.assigned}</td>
         <td>{t.bucket}</td>
-        <td><ProgressIcon progress={t.progress} /></td>
         <td><PriorityIcon priority={t.priority} /></td>
-        <td>{t.startDate}</td>
+        {/* <td>{t.startDate}</td> */}
         <td>{t.dueDate}</td>
+        <td>{<BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td>
+        <td>{<AiOutlineClose onClick={()=>this.deleteTask(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td>
       </tr>
     );
   }
@@ -92,15 +73,17 @@ class BulletList extends Component {
     return (
       <thead>
         <tr>
+          <th>Progress</th>
           <th>Title</th>
           <th>Group</th>
-          <th>Owner</th>
+          {/* <th>Owner</th> */}
           <th>Assigned</th>
           <th>Bucket</th>
-          <th>Progress</th>
           <th>Priority</th>
-          <th>Start Date</th>
+          {/* <th>Start Date</th> */}
           <th>Due Date</th>
+          <th>Edit</th>
+          <th>Delete</th>
         </tr>
       </thead>
     );
@@ -108,7 +91,7 @@ class BulletList extends Component {
 
 render() {
     const { tasks, tasksLoading } = this.props.tasks;
-    const { editMode, createTask } = this.state;
+    const { editTask, createTask } = this.state;
     let taskList = tasks 
     ? tasks.map((t, i) => {
         return (
@@ -123,6 +106,11 @@ return (
         {createTask
         ?
         <TaskModal create={true} state={this.state} closeModal={this.closeModal}/>
+        :
+        null}
+        {editTask
+        ?
+        <TaskModal edit state={this.state} closeModal={this.closeModal}/>
         :
         null}
         <button 
@@ -141,11 +129,6 @@ return (
     );
   }
 }
-
-// TaskForm.propTypes = {
-//   logoutUser: PropTypes.func.isRequired,
-//   auth: PropTypes.object.isRequired
-// };
 
 const mapStateToProps = state => ({
   auth: state.auth,

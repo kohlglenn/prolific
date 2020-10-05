@@ -3,7 +3,9 @@ import React, { Component } from "react";
 import { progress } from '../constants/';
 
 // import { BsCircle, BsFillCircleFill, BsCircleHalf, BsDashCircle, BsExclamationCircle, BsInfoCircle, BsXCircle } from 'react-icons/bs'; bucket??
-import { BsCircle, BsFillCircleFill, BsCircleHalf } from 'react-icons/bs';
+import { BsCircle, BsFillCircleFill, BsCircleHalf, BsCheckCircle } from 'react-icons/bs';
+import { AiFillCheckCircle, AiFillClockCircle } from 'react-icons/ai';
+import {FaCheckCircle, FaClock, FaCircleNotch, FaRegCircle, FaRegClock } from 'react-icons/fa';
 
 
 // Prop of 'progess' is REQUIRED
@@ -13,20 +15,19 @@ class ProgressIcon extends Component {
         switch(p) {
             case progress.NONE:
                 return (
-                    <BsCircle size={20} color={"blue"}  {...this.props} />
+                    <FaRegCircle size={20} color={"blue"}  {...this.props} />
                 );
             case progress.INPROGRESS:
                 return (
-                    <BsCircleHalf size={20} color={"blue"} {...this.props} 
-                    className={`transform rotate-90 ${this.props.className ? this.props.className : ""}`} />
+                    <FaRegClock size={20} color={"orange"} {...this.props} />
                 );
             case progress.DONE:
                 return (
-                    <BsFillCircleFill size={20} color={"green"} {...this.props} />
+                    <FaCheckCircle size={20} color={"green"} {...this.props} />
                 );
             default:
                 return (
-                    <BsCircle size={20} color={"blue"} {...this.props} />
+                    <FaCircleNotch size={20} color={"blue"} {...this.props} />
                 );
         }
     }

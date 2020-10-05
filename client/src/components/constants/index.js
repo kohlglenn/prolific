@@ -3,6 +3,7 @@ export const COLORS = {
     gray800: "rgb(45, 55, 72)",
     orange500: "rgb(237,137,54)",
     red500: "rgb(245,101,101)",
+    red800: "rgb(155,44,44)",
     blue500: "rgb(66,153,225)"
 };
 

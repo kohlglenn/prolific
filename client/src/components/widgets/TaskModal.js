@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { createTask } from '../../actions/taskActions';
+import { createTask, updateTask } from '../../actions/taskActions';
 import { COLORS, progress, priority, bucket } from '../constants';
 import { getDate, yyyymmddToDate, dateToYyyymmdd} from '../../utils/DateUtil';
 
@@ -8,6 +8,7 @@ import { AiOutlineClose } from "react-icons/ai";
 import ProgressIcon from './ProgressIcon';
 import PriorityIcon from "./PriorityIcon";
 
+// TODO: Update task button and hook up to edit task api
 
 // REQUIRES: edit xor create to be true
 class TaskModal extends Component {
@@ -20,13 +21,29 @@ class TaskModal extends Component {
             let date = getDate();
             this.setState({ 
                 ...this.state, 
-                owner: this.props.auth.user.id, 
+                // owner: this.props.auth.user.id, 
                 startDate: date, 
                 priority: priority.MEDIUM,
                 progress: progress.NONE,
                 bucket: bucket.NONE });
         } else if (this.props.edit) {
-            
+            let { task } = this.props.state;
+            task = JSON.parse(JSON.stringify(task)); // make copy
+            task = this.extractTaskDate(task);
+            this.setState({
+                title: task.title,
+                group: task.group,
+                assigned: task.assigned,
+                bucket: task.bucket,
+                progress: task.progress,
+                priority: task.priority,
+                startDate: task.startDate,
+                dueDate: task.dueDate,
+                notes: task.notes,
+                subtasks: task.subtasks,
+                owner: task.owner,
+                id: task._id
+            });
         }
     }
 
@@ -40,21 +57,42 @@ class TaskModal extends Component {
         if (this.props.create) {
             this.createTask(e);
         } else if (this.props.edit) {
-
+            this.updateTask(e);
         }
+        this.closeModal();
+    }
+
+    // converts Date object representation to yyyy-mm-dd format for presentation within modal
+    extractTaskDate = task => {
+        task.startDate = task.startDate ? dateToYyyymmdd(new Date(task.startDate)) : undefined;
+        task.dueDate = task.dueDate ? dateToYyyymmdd(new Date(task.dueDate)) : undefined;
+        return task;
+    };
+
+
+    // converts yyyy-mm-dd to Date object
+    convertTaskDate = task => {
+        task.startDate = task.startDate ? yyyymmddToDate(task.startDate) : undefined;
+        task.dueDate = task.dueDate ? yyyymmddToDate(task.dueDate) : undefined;
+        return (task);
     }
 
     createTask = e => {
-        // do date conversion
         let task = this.state;
-        task.startDate = yyyymmddToDate(task.startDate);
-        task.dueDate = task.dueDate ? yyyymmddToDate(task.dueDate) : undefined;
+        task = JSON.parse(JSON.stringify(task)); // make copy
+        task = this.convertTaskDate(task);
         this.props.createTask(task);
-        this.resetState();
+    };
+
+    updateTask = e => {
+        let task = this.state;
+        task = JSON.parse(JSON.stringify(task)); // make copy
+        task = this.convertTaskDate(task);
+        this.props.updateTask(task);
     };
 
     getGroups = () => {
-        let allGroups = ["Default", this.state.group];
+        let allGroups = [this.state.group];
         allGroups = allGroups.filter(g => { return !!g; }) // filters out undefined and all other 'falsey' values
         return allGroups.map((g, i) => {
             return (
@@ -64,8 +102,7 @@ class TaskModal extends Component {
     };
 
     getAssigned = () => {
-        const { name } = this.props.auth.user;
-        let allAssigned = [name, this.state.assigned];
+        let allAssigned = [this.state.assigned];
         allAssigned = allAssigned.filter(a => { return !!a; }) // filters out undefined and all other 'falsey' values
 
         return allAssigned.map((a, i) => {
@@ -101,6 +138,7 @@ class TaskModal extends Component {
 
     resetState = () => {
         this.setState({
+            ...this.state,
             title: "",
             group: "",
             assigned: "",
@@ -111,7 +149,7 @@ class TaskModal extends Component {
             dueDate: "",
             notes: "",
             subtasks: [],
-            owner: this.state.owner
+            id: ""
         });
     }
 
@@ -224,7 +262,7 @@ class TaskModal extends Component {
                                 className="ml-2 my-1 cursor-pointer"
                                 onChange={this.onChange}
                                 type="date"
-                                value={this.state.endDate}
+                                value={this.state.dueDate}
                                 id="dueDate" />
                         </div>
                         <div className="my-1">
@@ -237,6 +275,8 @@ class TaskModal extends Component {
                             />
                         </div>
                         <div className="w-full flex flex-row-reverse content-start">
+                            {this.props.create
+                            ?
                             <button
                                 className="mr-4 mb-2 bg-transparent hover:bg-gray-600 border-2 border-gray-700 text-gray-700 rounded-lg hover:text-white hover:border-transparent"
                                 type="submit">
@@ -244,6 +284,17 @@ class TaskModal extends Component {
                                 Create Task
                                 </span>
                             </button>
+                            : null}
+                            {this.props.edit
+                            ?
+                            <button
+                                className="mr-4 mb-2 bg-transparent hover:bg-gray-600 border-2 border-gray-700 text-gray-700 rounded-lg hover:text-white hover:border-transparent"
+                                type="submit">
+                                <span className="m-2">
+                                Edit Task
+                                </span>
+                            </button>
+                            : null}
                         </div>
                     </form>
                 </div>
@@ -259,5 +310,5 @@ const mapStateToProps = state => ({
 
 export default connect(
     mapStateToProps,
-    { createTask }
+    { createTask, updateTask }
 )(TaskModal);
