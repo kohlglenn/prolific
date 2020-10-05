@@ -28,12 +28,13 @@ import {
         let index = state.tasks.findIndex(
           task => task._id === action.payload._id
         );
-  
-        state.tasks.splice(index, 1);
+
+        let tasks = JSON.parse(JSON.stringify(state.tasks));
+        tasks.splice(index,1,action.payload);
   
         return {
           ...state,
-          tasks: [action.payload, ...state.tasks]
+          tasks: tasks
         };
       case DELETE_TASK:
         return {

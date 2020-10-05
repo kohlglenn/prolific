@@ -14,19 +14,13 @@ class NavBar extends Component {
     };
 
     componentDidMount() {
+        
     }
 
     onLogoutClick = e => {
         e.preventDefault();
         this.props.logoutUser();
     };
-
-    // toggleIsOpen = e => {
-    //     e.preventDefault();
-    //     const { isOpen } = this.state;
-    //     this.setState({...this.state, isOpen: !isOpen});
-    // };
-
 
     render() {
         const { isOpen } = this.props; // drilled down from screen
@@ -37,10 +31,10 @@ class NavBar extends Component {
                 <div className="p-2">
                     <div
                         className="flex flex-row-reverse justify-items-end hover:opacity-50">
-                        <button
-                        className={`transition-transform duration-300 transform ${isOpen ? "rotate-0" : "rotate-180"}`}>
+                        <div
+                        className={`cursor-pointer transition-transform duration-300 transform ${isOpen ? "rotate-0" : "rotate-180"}`}>
                             <AiOutlineMenuFold onClick={this.props.toggleOpen} size={32} color={COLORS.gray} />
-                        </button>
+                        </div>
                     </div>
                     <div
                         className="flex flex-row justify-items-start">
