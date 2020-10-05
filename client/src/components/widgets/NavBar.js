@@ -8,13 +8,12 @@ import { RiLogoutBoxLine } from 'react-icons/ri';
 import { COLORS } from "../constants";
 import { Link } from "react-router-dom";
 
-class Header extends Component {
+class NavBar extends Component {
     state = {
 
     };
 
     componentDidMount() {
-
     }
 
     onLogoutClick = e => {
@@ -22,17 +21,25 @@ class Header extends Component {
         this.props.logoutUser();
     };
 
+    // toggleIsOpen = e => {
+    //     e.preventDefault();
+    //     const { isOpen } = this.state;
+    //     this.setState({...this.state, isOpen: !isOpen});
+    // };
+
 
     render() {
+        const { isOpen } = this.props; // drilled down from screen
         return (
             <div
             style={{borderTopRightRadius: '1.5rem'}}
-            className="flex h-screen bg-gray-800 w-64 flex-col justify-between p-2">
+            className={`flex h-screen bg-gray-800 w-64 flex-col justify-between p-2`} >
                 <div className="p-2">
                     <div
                         className="flex flex-row-reverse justify-items-end hover:opacity-50">
-                        <button>
-                            <AiOutlineMenuFold size={32} color={COLORS.gray} />
+                        <button
+                        className={`transition-transform duration-300 transform ${isOpen ? "rotate-0" : "rotate-180"}`}>
+                            <AiOutlineMenuFold onClick={this.props.toggleOpen} size={32} color={COLORS.gray} />
                         </button>
                     </div>
                     <div
@@ -92,4 +99,4 @@ const mapStateToProps = state => ({
 export default connect(
     mapStateToProps,
     { logoutUser }
-)(Header);
+)(NavBar);

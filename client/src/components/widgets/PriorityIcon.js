@@ -12,7 +12,7 @@ class PriorityIcon extends Component {
             case priority.LOW:
                 return (
                     <FiBarChart size={20} color={COLORS.blue500}  {...this.props}
-                    className={`transform scale-x-flip-x ${this.props.className ? this.props.className : ""}`} />
+                    className={`transform -scale-x-1 ${this.props.className ? this.props.className : ""}`} />
                 );
             case priority.MEDIUM:
                 return (
