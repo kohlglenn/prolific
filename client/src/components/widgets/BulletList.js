@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import {getTasks, updateTask, deleteTask} from '../../actions/taskActions';
 import { COLORS } from '../constants';
+import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils/DateUtil';
+import { truncate } from '../../utils/StringUtil';
 
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { BiEdit } from "react-icons/bi";
@@ -53,18 +55,26 @@ class BulletList extends Component {
 
   renderTaskRow = t => {
     return (
-      <tr key={t._id}>
-        <td><ProgressIcon progress={t.progress} /></td>
-        <td>{t.title}</td>
-        <td>{t.group}</td>
-        {/* <td>{t.owner}</td> */}
-        <td>{t.assigned}</td>
-        <td>{t.bucket}</td>
-        <td><PriorityIcon priority={t.priority} /></td>
-        {/* <td>{t.startDate}</td> */}
-        <td>{t.dueDate}</td>
-        <td>{<BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td>
-        <td>{<AiOutlineClose onClick={()=>this.deleteTask(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td>
+      <tr key={t._id} className="bg-gray-100">
+        <td
+        className="border px-4 py-2">
+          <div className="flex flex-row">
+            <ProgressIcon progress={t.progress} />
+            <span className="ml-2">{t.progress}</span>
+          </div>
+        </td>
+        <td className="border px-4 py-2 max-w-lg">
+          <div className="flex flex-row justify-between">
+            <span className="whitespace-no-wrap">{truncate(t.title, 50)}</span>
+            <BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> 
+          </div>
+        </td>
+        {/* <td className="border px-4 py-2">{<BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td> */}
+        <td className="border px-4 py-2 whitespace-no-wrap">{t.dueDate ? fullDateStringToYyyymmdd(t.dueDate) + " " + fullDateStringToHourMinPm(t.dueDate) : ""}</td>
+        <td className="border px-4 py-2">{t.group}</td>
+        <td className="border px-4 py-2">{t.assigned}</td>
+        <td className="border px-4 py-2"><PriorityIcon priority={t.priority} /></td>
+        <td className="border px-4 py-2">{<AiOutlineClose onClick={()=>this.deleteTask(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td>
       </tr>
     );
   }
@@ -74,15 +84,13 @@ class BulletList extends Component {
       <thead>
         <tr>
           <th>Progress</th>
-          <th>Title</th>
-          <th>Group</th>
-          {/* <th>Owner</th> */}
-          <th>Assigned</th>
-          <th>Bucket</th>
-          <th>Priority</th>
-          {/* <th>Start Date</th> */}
+          <th>
+            Title
+          </th>
           <th>Due Date</th>
-          <th>Edit</th>
+          <th>Group</th>
+          <th>Assigned</th>
+          <th>Priority</th>
           <th>Delete</th>
         </tr>
       </thead>
@@ -119,7 +127,7 @@ return (
           < AiOutlinePlus size={22} className="ml-1"/>
           <span className="mx-2">Create Task</span>
         </button>
-        <table className="m-2">
+        <table className="m-2 table-auto">
           {this.renderTaskHeader()}
           {tasksLoading 
           ? <tr><td>loading...</td></tr> 
