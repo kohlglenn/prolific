@@ -291,7 +291,7 @@ class TaskModal extends Component {
                                 className="mr-4 mb-2 bg-transparent hover:bg-gray-600 border-2 border-gray-700 text-gray-700 rounded-lg hover:text-white hover:border-transparent"
                                 type="submit">
                                 <span className="m-2">
-                                Edit Task
+                                Update Task
                                 </span>
                             </button>
                             : null}

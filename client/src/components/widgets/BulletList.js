@@ -45,7 +45,12 @@ class BulletList extends Component {
   
   
 
-  startEdit = t => {
+  startEdit = (t,e) => {
+    console.log(e.target);
+    console.log(e.target.id);
+    if (e.target.id === "progressIcon") {
+      // UPDATE TASK TO INCREMENT PROGRESS. Can also use this framework for assignee etc maybe? Create a popup based on click location
+    }
     this.setState({...this.state, editTask: true, task: t})
   };
 
@@ -55,18 +60,20 @@ class BulletList extends Component {
 
   renderTaskRow = t => {
     return (
-      <tr key={t._id} className="bg-gray-100">
+      <tr key={t._id} 
+      className="bg-gray-100 hover:bg-blue-100 cursor-pointer"
+      onClick={(e)=>{this.startEdit(t,e)}}>
         <td
         className="border px-4 py-2">
           <div className="flex flex-row">
-            <ProgressIcon progress={t.progress} />
+            <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={t.progress} />
             <span className="ml-2">{t.progress}</span>
           </div>
         </td>
         <td className="border px-4 py-2 max-w-lg">
           <div className="flex flex-row justify-between">
             <span className="whitespace-no-wrap">{truncate(t.title, 50)}</span>
-            <BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> 
+            {/* <BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} />  */}
           </div>
         </td>
         {/* <td className="border px-4 py-2">{<BiEdit onClick={()=>this.startEdit(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} /> }</td> */}
