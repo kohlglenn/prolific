@@ -12,13 +12,15 @@ import OpacityButton from "../button/OpacityButton";
 import TaskModal from "./TaskModal";
 import PriorityIcon from "./PriorityIcon";
 import ProgressIcon from "./ProgressIcon";
+import Combobox from './Combobox';
 
 class BulletList extends Component {
     state = {
         createTask: false,
         editTask: false, 
         owner: "",
-        task: undefined
+        task: undefined,
+        testVal: ""
     };
 
     componentDidMount() {
@@ -137,9 +139,10 @@ return (
         <table className="m-2 table-auto">
           {this.renderTaskHeader()}
           {tasksLoading 
-          ? <tr><td>loading...</td></tr> 
+          ? <tbody><tr><td>loading...</td></tr></tbody> 
           : <tbody>{taskList}</tbody>}
         </table>
+        <Combobox values={["Uno", "dos", "tres"]} value={this.state.testVal} onChange={this.onChange} id="testVal" />
       </div>
     );
   }
