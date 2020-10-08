@@ -7,12 +7,12 @@ class Combobox extends Component {
     state = {
         dropdownOpen: false,
         goodValues: [],
-        badValues: [],
-        update: false
+        update: false, 
+        lastLength: 0
     };
 
     componentDidMount() {
-        this.setState({ ...this.state, goodValues: [...this.props.values] });
+        this.setState({ ...this.state, goodValues: [...this.props.values], lastLength: this.props.value.length });
     }
 
     onChange = e => {
@@ -21,26 +21,23 @@ class Combobox extends Component {
     }
 
     componentDidUpdate() {
-        const { badValues, goodValues, update } = this.state;
+        const { goodValues, lastLength, update } = this.state;
         if (update) {
-            // Filter dropdown box on update
-            // O(n) complexity. Don't think this will be a performance issue
-            let worseValues = [...badValues];
-            let betterValues = goodValues.filter(value => {
-                if (value.includes(this.props.value)) {
-                    return true;
-                } else {
-                    worseValues.push(value);
-                }
-            });
-            worseValues = worseValues.filter(value => {
-                if (value.includes(this.props.value)) {
-                    betterValues.push(value);
-                } else {
-                    return true;
-                }
-            });
-            this.setState({ ...this.state, goodValues: betterValues, badValues: worseValues, update: false });
+            let betterValues;
+            if (this.props.value.length < lastLength) { // remove chars so narrow filter
+                betterValues = this.props.values.filter(value => {
+                    if (value.includes(this.props.value)) {
+                        return true;
+                    }
+                });
+            } else { // add chars so reset to start and then narrow filter in order to preserve original ordering
+                betterValues = goodValues.filter(value => {
+                    if (value.includes(this.props.value)) {
+                        return true;
+                    }
+                });
+            }
+            this.setState({ ...this.state, goodValues: betterValues, update: false, lastLength: this.props.value.length });
         }
     }
 
@@ -68,7 +65,6 @@ class Combobox extends Component {
         // needed to make the the dropdown focusable (by adding tabindex=0) and check to see if the object gaining focus was a child
         // of the object losing focus. currentTarget is the object losing focus, relatedTarget is the object gaining it.
         if (!e.currentTarget.contains(e.relatedTarget)) {
-            console.log(e.target.value);
             this.setState({ ...this.state, dropdownOpen: false });
         }
     }
@@ -79,7 +75,7 @@ class Combobox extends Component {
             return this.renderItem(v);
         });
         return (
-            <div className="relative w-32" onBlur={this.onBlur}>
+            <div className="relative w-32" style={{...this.props.style}} onBlur={this.onBlur}>
                 <input
                     className="pl-1 w-full pr-6 border rounded-sm outline-none"
                     type="text"
@@ -112,7 +108,8 @@ Combobox.propTypes = {
     value: PropTypes.string.isRequired,
     values: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    style: PropTypes.object
 };
 
 export default Combobox;
