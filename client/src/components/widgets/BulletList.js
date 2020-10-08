@@ -12,7 +12,7 @@ import OpacityButton from "../button/OpacityButton";
 import TaskModal from "./TaskModal";
 import PriorityIcon from "./PriorityIcon";
 import ProgressIcon from "./ProgressIcon";
-import Combobox from './Combobox';
+import TimeCombobox from './TimeCombobox';
 
 class BulletList extends Component {
     state = {
@@ -142,7 +142,6 @@ return (
           ? <tbody><tr><td>loading...</td></tr></tbody> 
           : <tbody>{taskList}</tbody>}
         </table>
-        <Combobox values={["Uno", "dos", "tres"]} value={this.state.testVal} onChange={this.onChange} id="testVal" />
       </div>
     );
   }

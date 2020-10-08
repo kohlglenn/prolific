@@ -21,7 +21,6 @@ class TaskModal extends Component {
             let date = getDate();
             this.setState({ 
                 ...this.state, 
-                // owner: this.props.auth.user.id, 
                 startDate: date, 
                 priority: priority.MEDIUM,
                 progress: progress.NONE,
