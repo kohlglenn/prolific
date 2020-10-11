@@ -6,7 +6,7 @@ import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils
 import { truncate } from '../../utils/StringUtil';
 
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-import { BiEdit } from "react-icons/bi";
+import { BiEdit, BiSortDown, BiSortUp } from "react-icons/bi";
 import { FaEraser, FaThList } from "react-icons/fa";
 import OpacityButton from "../button/OpacityButton";
 import TaskModal from "./TaskModal";
@@ -14,13 +14,30 @@ import PriorityIcon from "./PriorityIcon";
 import ProgressIcon from "./ProgressIcon";
 import TimeCombobox from './TimeCombobox';
 
+const SORTDIR = {
+  ASC: 1,
+  DESC: -1
+};
+
+// List of the table headers and key to sort tasks on (from TaskSchema)
+const HEADERS = [
+  { name: "Progress", key: "progress" },
+  { name: "Title", key: "title" },
+  { name: "Due Date", key: "dueDate" },
+  { name: "Group", key: "group" },
+  { name: "Assigned", key: "assigned" },
+  { name: "Priority", key: "priority" }
+];
+
 class BulletList extends Component {
   state = {
     createTask: false,
     editTask: false,
     owner: "",
     task: undefined,
-    testVal: ""
+    testVal: "",
+    sortedOn: "_id",
+    sortDir: SORTDIR.ASC
   };
 
   componentDidMount() {
@@ -67,7 +84,7 @@ class BulletList extends Component {
           className="border px-4 py-2">
           <div className="flex flex-row">
             <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={t.progress} />
-            <span className="ml-2">{t.progress}</span>
+            <span className="ml-2 whitespace-no-wrap">{t.progress}</span>
           </div>
         </td>
         <td className="border px-4 py-2 max-w-lg">
@@ -85,49 +102,75 @@ class BulletList extends Component {
   }
 
   renderTaskHeader = () => {
+    let headers = HEADERS.map((h, i) => {
+      return (
+        <th key={h.name}>
+          {this.renderTaskHeaderHelper(h.name, h.key)}
+        </th>
+      );
+    });
+
     return (
       <thead>
         <tr>
-          <th>
-            Progress
-          </th>
-          <th>
-            Title
-          </th>
-          <th>
-            Due Date
-          </th>
-          <th>
-            Group
-          </th>
-          <th>
-            Assigned
-          </th>
-          <th>
-            Priority
-          </th>
-          <th>
-            Delete
-          </th>
+          {headers}
         </tr>
       </thead>
     );
   }
 
-  taskHeaderHelper = (name, sort, filter) => {
-    
+  toggleSort = (e, sortKey) => {
+    e.preventDefault();
+    if (this.state.sortedOn === sortKey) {
+      // flip sort dir or remove sort from row
+      if (this.state.sortDir === SORTDIR.ASC) {
+        this.setState({ ...this.state, sortDir: SORTDIR.DESC });
+      } else {
+        this.setState({ ...this.state, sortDir: SORTDIR.ASC, sortedOn: "_id" });
+      }
+    } else {
+      // sort in ascending order on sortKey
+      this.setState({ ...this.state, sortedOn: sortKey, sortDir: SORTDIR.ASC })
+    }
+  }
+
+  renderTaskHeaderHelper = (name, sortKey) => {
+    const isSorted = sortKey === this.state.sortedOn;
+    const { sortDir } = this.state;
+
+    return (
+      <div 
+        className="relative"
+        onClick={e => this.toggleSort(e, sortKey)}>
+        <span
+        className="pr-6 whitespace-no-wrap">{name}</span>
+        {isSorted
+          ?
+          <div 
+          className="absolute top-0 right-0 w-6">
+            {sortDir === SORTDIR.ASC
+            ? <BiSortDown size={20} />
+            : <BiSortUp size={20} />}
+          </div>
+          : null}
+      </div>
+    );
   }
 
   render() {
     const { tasks, tasksLoading } = this.props.tasks;
-    const { editTask, createTask } = this.state;
-    let taskList = tasks
-      ? tasks.map((t, i) => {
-        return (
-          this.renderTaskRow(t)
-        );
-      })
-      : [];
+    const { editTask, createTask, sortedOn, sortDir } = this.state;
+    const sortHelper = (a, b) => {
+      return sortDir * (a[sortedOn] > b[sortedOn] ? 1 : (a[sortedOn] < b[sortedOn] ? -1 : 0));
+    }
+
+    let taskList = [...tasks];
+    taskList.sort(sortHelper);
+    taskList = taskList.map((t, i) => {
+      return (
+        this.renderTaskRow(t)
+      );
+    });
 
     return (
       <div className="flex flex-col">
@@ -150,10 +193,11 @@ class BulletList extends Component {
         <table className="m-2 table-auto">
           {this.renderTaskHeader()}
           {tasksLoading
-            ? 
+            ?
             <tbody><tr><td>loading...</td></tr></tbody>
-            : 
-            <tbody>{taskList}</tbody>}
+            :
+            <tbody>{taskList}</tbody>
+          }
         </table>
       </div>
     );

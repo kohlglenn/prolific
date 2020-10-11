@@ -100,7 +100,7 @@ class TimeCombobox extends Component {
                 </div>
                 {this.state.dropdownOpen
                     ?
-                    <div className="absolute bot-0 left-0 w-full flex flex-row bg-white">
+                    <div className="absolute z-10 bot-0 left-0 w-full flex flex-row bg-white">
                         <div className="w-1/2 border">
                             <ul
                             className="h-full w-full flex flex-col justify-around items-center">

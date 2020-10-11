@@ -274,7 +274,6 @@ class TaskModal extends Component {
                             <input
                                 className="ml-2 my-1 cursor-pointer"
                                 style={{width: '9rem'}}
-                                required
                                 type="date"
                                 value={this.state.dueDate}
                                 onChange={this.onChange}
