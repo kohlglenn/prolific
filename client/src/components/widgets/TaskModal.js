@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import { createTask, updateTask } from '../../actions/taskActions';
 import { COLORS, progress, priority, bucket } from '../constants';
-import { getDate, yyyymmddToDate, dateToYyyymmdd} from '../../utils/DateUtil';
+import { getDate, yyyymmddToDate, dateToYyyymmdd, dateToHhmm, yyyymmddhhmmToDate} from '../../utils/DateUtil';
 
 import { AiOutlineClose } from "react-icons/ai";
 import ProgressIcon from './ProgressIcon';
 import PriorityIcon from "./PriorityIcon";
+import TimeCombobox from "./TimeCombobox";
 
 // TODO: Update task button and hook up to edit task api
 
@@ -41,7 +42,9 @@ class TaskModal extends Component {
                 notes: task.notes,
                 subtasks: task.subtasks,
                 owner: task.owner,
-                id: task._id
+                id: task._id,
+                startTime: task.startTime,
+                dueTime: task.dueTime
             });
         }
     }
@@ -61,19 +64,21 @@ class TaskModal extends Component {
         this.closeModal();
     }
 
-    // converts Date object representation to yyyy-mm-dd format for presentation within modal
+    // converts Date object representation to yyyy-mm-dd and hh:mm format for presentation within modal
     extractTaskDate = task => {
+        task.startTime = task.startDate ? dateToHhmm(new Date(task.startDate)) : undefined;
         task.startDate = task.startDate ? dateToYyyymmdd(new Date(task.startDate)) : undefined;
+        task.dueTime = task.dueDate ? dateToHhmm(new Date(task.dueDate)) : undefined;
         task.dueDate = task.dueDate ? dateToYyyymmdd(new Date(task.dueDate)) : undefined;
         return task;
     };
 
 
-    // converts yyyy-mm-dd to Date object
+    // converts yyyy-mm-dd and hh:mm to Date object
     convertTaskDate = task => {
-        task.startDate = task.startDate ? yyyymmddToDate(task.startDate) : undefined;
-        task.dueDate = task.dueDate ? yyyymmddToDate(task.dueDate) : undefined;
-        return (task);
+        task.startDate = task.startDate ? yyyymmddhhmmToDate(task.startDate, task.startTime) : undefined;
+        task.dueDate = task.dueDate ? yyyymmddhhmmToDate(task.dueDate, task.dueTime) : undefined;
+        return task;
     }
 
     createTask = e => {
@@ -162,7 +167,7 @@ class TaskModal extends Component {
         return (
             <div className="top-0 left-0 h-screen w-screen absolute z-10 flex place-items-center bg-black bg-opacity-50"
                 style={{}}>
-                <div className="bg-white w-1/2 m-auto rounded-lg max-w-sm">
+                <div className="bg-white w-1/2 m-auto rounded-lg">
                     <div className="flex flex-row-reverse place-items-start">
                             <AiOutlineClose onClick={this.closeModal} className="mt-2 mr-2 hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} />
                     </div>
@@ -245,24 +250,41 @@ class TaskModal extends Component {
                                 {this.getBuckets()}
                             </select>
                         </div>
-                        <div className="my-1">
+                        <div 
+                        className="my-1 flex flex-row justify-items-start items-center">
                             <span className="text-gray-500">Start Date: </span>
                             <input
                                 className="ml-2 my-1 cursor-pointer"
+                                style={{width: '9rem'}}
                                 required
                                 type="date"
                                 value={this.state.startDate}
                                 onChange={this.onChange}
                                 id="startDate" />
+                            <div className="ml-2">
+                                <TimeCombobox id="startTime" 
+                                value={this.state.startTime}
+                                onChange={this.onChange} 
+                                />
+                            </div>
                         </div>
-                        <div className="my-1">
-                            <span className="text-gray-500">Due Date:</span>
+                        <div 
+                        className="my-1 flex flex-row justify-items-start items-center">
+                            <span className="text-gray-500">Due Date: </span>
                             <input
                                 className="ml-2 my-1 cursor-pointer"
-                                onChange={this.onChange}
+                                style={{width: '9rem'}}
+                                required
                                 type="date"
                                 value={this.state.dueDate}
+                                onChange={this.onChange}
                                 id="dueDate" />
+                            <div className="ml-2">
+                                <TimeCombobox id="dueTime" 
+                                value={this.state.dueTime}
+                                onChange={this.onChange} 
+                                />
+                            </div>
                         </div>
                         <div className="my-1">
                             <textarea

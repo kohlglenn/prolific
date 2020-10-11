@@ -7,7 +7,8 @@ const HOURS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11',
 const MIN_BREAKPOINTS = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55'];
 const AM_PM = ['am', 'pm'];
 const VALUES = [HOURS, MIN_BREAKPOINTS, AM_PM];
-const TEXT_SIZE = "sm";
+// const TEXT_SIZE = "sm";
+const TEXT_SIZE = "";
 
 const getIndex = desc => {
     return (desc === "HOURS") ? 0 : ((desc === "MINS") ? 1 : -1);
@@ -84,12 +85,14 @@ class TimeCombobox extends Component {
         return (
             <div className="relative w-24" style={{...this.props.style}} onBlur={this.onBlur}>
                 <input
+                    autoComplete="off"
                     className={`${TEXT_SIZE === 'sm' ? 'text-sm' : ''} pl-1 w-full pr-6 border rounded-sm outline-none`}
                     type="text"
                     onChange={this.onChange}
                     onFocus={(e) => this.setState({ ...this.state, dropdownOpen: true })}
                     value={value}
                     id={id}
+                    placeholder={"hh:mm"}
                 />
                 <div className="absolute top-0 right-0 w-6 cursor-pointer h-full border-l rounded-r-sm"
                     onClick={(e) => this.setState({ ...this.state, dropdownOpen: !this.state.dropdownOpen })}>
@@ -97,7 +100,7 @@ class TimeCombobox extends Component {
                 </div>
                 {this.state.dropdownOpen
                     ?
-                    <div className="absolute bot-0 left-0 w-full flex flex-row">
+                    <div className="absolute bot-0 left-0 w-full flex flex-row bg-white">
                         <div className="w-1/2 border">
                             <ul
                             className="h-full w-full flex flex-col justify-around items-center">
