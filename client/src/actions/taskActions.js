@@ -10,35 +10,38 @@ import {
 
 // Create Task
 export const createTask = taskData => dispatch => {
-    axios
-      .post("/api/tasks/create", taskData)
-      .then(res =>
-        dispatch({
-          type: CREATE_TASK,
-          payload: res.data
-        })
-      )
-      .catch(err => console.log(err));
-  };
-  
-  // Get tasks by user id
-  export const getTasks = id => dispatch => {
-    dispatch(setTasksLoading());
-    axios
-      .get(`/api/tasks/${id}`)
-      .then(res => {
-        dispatch({
-          type: GET_TASKS,
-          payload: res.data
-        })
+  axios
+    .post("/api/tasks/create", taskData)
+    .then(res =>
+      dispatch({
+        type: CREATE_TASK,
+        payload: res.data
+      })
+    )
+    .catch(err => console.log(err));
+};
+
+// Get tasks by user id
+export const getTasks = id => dispatch => {
+  dispatch(setTasksLoading());
+  return axios
+    .get(`/api/tasks/${id}`)
+    .then(res => {
+      dispatch({
+        type: GET_TASKS,
+        payload: res.data
+      });
+      return Promise.resolve(res);
     })
-      .catch(err =>
-        dispatch({
-          type: GET_TASKS,
-          payload: null
-        })
-      );
-  };
+    .catch(err => {
+      dispatch({
+        type: GET_TASKS,
+        payload: null
+      });
+      return Promise.reject(err);
+    }
+    );
+};
 
 // Delete Task
 export const deleteTask = id => dispatch => {
@@ -68,7 +71,7 @@ export const updateTask = taskData => dispatch => {
 
 // Tasks loading
 export const setTasksLoading = () => {
-    return {
-      type: TASKS_LOADING
-    };
+  return {
+    type: TASKS_LOADING
   };
+};

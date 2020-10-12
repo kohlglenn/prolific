@@ -262,7 +262,8 @@ class TaskModal extends Component {
                                 onChange={this.onChange}
                                 id="startDate" />
                             <div className="ml-2">
-                                <TimeCombobox id="startTime" 
+                                <TimeCombobox 
+                                id="startTime" 
                                 value={this.state.startTime}
                                 onChange={this.onChange} 
                                 />

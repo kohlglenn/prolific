@@ -4,6 +4,7 @@ import { getTasks, updateTask, deleteTask } from '../../actions/taskActions';
 import { COLORS } from '../constants';
 import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils/DateUtil';
 import { truncate } from '../../utils/StringUtil';
+import PropTypes from 'prop-types';
 
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
 import { BiSortDown, BiSortUp } from "react-icons/bi";
@@ -11,11 +12,180 @@ import { HiFilter, HiOutlineFilter } from 'react-icons/hi';
 import TaskModal from "./TaskModal";
 import PriorityIcon from "./PriorityIcon";
 import ProgressIcon from "./ProgressIcon";
-import { FaTintSlash } from "react-icons/fa";
 
 const SORTDIR = {
   ASC: 1,
   DESC: -1
+};
+
+/**
+ * TODO
+ * --Unhighlight filter if no filters from column are selected
+ * --Show filters on clicking menu and have check marks show up 
+ * (this involved coming up with a structure in state to keep track of arbitrary values)
+ * --ability to add different kinds of filters (ranges, etc) and state handling of these filters
+ * --factor out filter logic. Consider having all filter menu logic be self-contained in a component and filter logic in a queryutil class
+ * (will I be able to extract the state I need to if I do this?)
+ * --on select all, highlight/unhighlight all choices in filter menu
+ * --remove console.log statements
+ * --remove null and undefined from filter lists and have all select them by default
+ */
+
+/**
+ * @param list table of values you want to extract unique values from
+ * @param listKey list key you want to use to filter values
+ * @param setFilter function to set filter
+ * @param setActive funtion to set active flag on unmounting
+ * @param filter return value: data structure that is updated on filter in form {and: [{'filter': {'key': 'value'}}]}
+ */
+class FilterMenu extends Component {
+  state = {
+    list: [],
+    isChecked: {}
+  };
+
+  componentDidMount() {
+    // list: list of unique values
+    // filteredList: processes list with this.props.filter to see which options have been selected
+    const { listKey: key } = this.props;
+    let list = this.props.list.map((v, i) => {
+      return v[key];
+    });
+    let filteredList = list.filter((v, i) => {
+      return filterProcessor({ [key]: v }, this.props.filter);
+    });
+    list = list.filter((v, i) => {
+      return v && i === list.findIndex((item) => item === v);
+    });
+    let isChecked = {};
+    for (const value of list) {
+      isChecked[value] = false;
+    }
+    for (const value of filteredList) {
+      isChecked[value] = true;
+    }
+    let all = true;
+    for (const value of Object.values(isChecked)) {
+      all = all && value;
+    }
+    isChecked.all = all;
+    this.setState({ ...this.state, list: list, isChecked: isChecked });
+  };
+
+  componentWillUnmount() {
+    const {listKey: key} = this.props;
+    let filteredList = this.state.list.filter((v, i) => {
+      return filterProcessor({ [key]: v }, this.props.filter);
+    });
+    this.props.setActive(filteredList.length !== this.state.list.length);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.tasks !== this.props.tasks) {
+      let list = this.props.list.map((v, i) => {
+        return v[this.props.listKey];
+      });
+      list = list.filter((v, i) => {
+        return v && i === list.findIndex((item) => item === v);
+      });
+      let isChecked = { ...this.state.isChecked };
+      for (const value of list) {
+        if (!(value in isChecked)) {
+          isChecked[value] = true;
+        }
+      }
+      let all = true;
+      for (const value of Object.values(isChecked)) {
+        all = all && value;
+      }
+      isChecked.all = all;
+      this.setState({ ...this.state, list: list, isChecked: isChecked });
+    }
+  }
+
+  generateFilter = isChecked => {
+    // if all is checked, then do not filter anything
+    if (isChecked.all === true) {
+      return { and: [] };
+    }
+    // generates a filter that EXCLUDES those NOT checked
+    let filterObj = { or: [] };
+    for (const [key, value] of Object.entries(isChecked)) {
+      if (!value) {
+        filterObj.or.push({ eq: { [this.props.listKey]: key } });
+      }
+    }
+
+    return { not: filterObj };
+  }
+
+  onChange = (e, item) => {
+    e.stopPropagation();
+    e.preventDefault();
+    let allValue = this.state.isChecked.all;
+    let isChecked = { ...this.state.isChecked };
+    if (item === 'all') {
+      for (const [key, value] of Object.entries(isChecked)) {
+        isChecked[key] = !allValue;
+      }
+    } else {
+      const currValue = this.state.isChecked[item];
+      isChecked[item] = !currValue;
+      allValue = true;
+      for (const [key, value] of Object.entries(isChecked)) {
+        if (key !== 'all') {
+          allValue = allValue && value;
+        }
+      }
+      isChecked.all = allValue;
+    }
+    let filter = this.generateFilter(isChecked);
+    this.props.setFilter(filter);
+    this.setState({ ...this.state, isChecked: isChecked });
+  }
+
+  renderListItem = item => {
+    const autoFocus = false;
+
+    return (
+      <div
+        autoFocus={autoFocus}
+        tabIndex={0}
+        className="relative outline-none"
+        key={item}
+        id={item}
+        onClick={e => this.onChange(e, item)}>
+        <div
+          className="absolute top-0 left-0 w-4">
+          <span>{this.state.isChecked[item] ? "x" : "o"}</span>
+        </div>
+        <label
+          className="pl-4">
+          {item}
+        </label>
+      </div>
+    );
+  };
+
+  render() {
+    let itemList = [...this.state.list];
+    itemList.unshift('all');
+    itemList = itemList.map(item => this.renderListItem(item));
+    return (
+      <div
+        className="absolute top-6 right-0 bg-white z-20">
+        {itemList}
+      </div>
+    );
+  }
+}
+
+FilterMenu.propTypes = {
+  listKey: PropTypes.string.isRequired,
+  list: PropTypes.array.isRequired,
+  filter: PropTypes.object.isRequired,
+  setFilter: PropTypes.func.isRequired,
+  setActive: PropTypes.func.isRequired
 };
 
 const FILTERTYPES = ['and', 'or', 'not', 'eq', 'gt', 'lt', 'in'];
@@ -24,6 +194,7 @@ const FILTERTYPES = ['and', 'or', 'not', 'eq', 'gt', 'lt', 'in'];
 const filterProcessor = (item, filterObj) => {
   // e.g. {'eq': {'title': 'my title'}}
   const key = Object.keys(filterObj)[0]; // e.g. 'eq' should only be one key total
+  if (!key) return true; // empty objects are true by default
   let filter, filterKey, filterValue;
   filter = filterObj[key]; // e.g. {'title' : 'my title'}
   if (key !== 'and' && key !== 'or') {
@@ -53,7 +224,7 @@ const filterProcessor = (item, filterObj) => {
     case 'in':
       return item[filterKey].includes(filterValue);
     default:
-      console.error(`Invalid filter ${filterObj}`);
+      console.error(`Invalid filter ${JSON.stringify(filterObj)}`);
       return true;
   }
 }
@@ -77,14 +248,18 @@ class BulletList extends Component {
     testVal: "",
     sortedOn: "_id",
     sortDir: SORTDIR.ASC,
-    filterOn: [],
-    filter: { and: [] },
-    activeFilter: ""
-    };
+    filter: {},
+    activeFilter: "",
+    activeFilters: []
+  };
 
   componentDidMount() {
     this.props.getTasks(this.props.auth.user.id);
-    this.setState({ ...this.state, owner: this.props.auth.user.id });
+    let myFilter = {};
+    for (const h of HEADERS) {
+      myFilter[h.key] = {};
+    }
+    this.setState({ ...this.state, owner: this.props.auth.user.id, filter: myFilter });
   }
 
   onChange = e => {
@@ -105,8 +280,6 @@ class BulletList extends Component {
   }
 
   startEdit = (t, e) => {
-    console.log(e.target);
-    console.log(e.target.id);
     if (e.target.id === "progressIcon") {
       // UPDATE TASK TO INCREMENT PROGRESS. Can also use this framework for assignee etc maybe? Create a popup based on click location
     }
@@ -143,11 +316,11 @@ class BulletList extends Component {
     );
   }
 
-  renderTaskHeader = (uniqueValues) => {
+  renderTaskHeader = () => {
     let headers = HEADERS.map((h, i) => {
       return (
         <th key={h.name}>
-          {this.renderTaskHeaderHelper(h.name, h.key, uniqueValues)}
+          {this.renderTaskHeaderHelper(h.name, h.key)}
         </th>
       );
     });
@@ -163,7 +336,6 @@ class BulletList extends Component {
 
   toggleSort = (e, sortKey) => {
     e.preventDefault();
-    console.log('second');
     if (this.state.sortedOn === sortKey) {
       // flip sort dir or remove sort from row
       if (this.state.sortDir === SORTDIR.ASC) {
@@ -177,23 +349,34 @@ class BulletList extends Component {
     }
   }
 
-  handleFilter = (e, key) => {
+  // Controls the filter menu
+  toggleFilterMenu = (e, key) => {
     e.preventDefault();
     e.stopPropagation();
-    const { filterOn, activeFilter } = this.state;
-
-    if (!filterOn.includes(key) && activeFilter !== key) {
-      this.setState({ ...this.state, filterOn: [...this.state.filterOn, key], activeFilter: key });
-    } else if (!filterOn.includes(key) && activeFilter === key) {
-      this.setState({ ...this.state, filterOn: [...this.state.filterOn, key], activeFilter: "" });
-    } else if (activeFilter !== key) {
-      this.setState({...this.state, activeFilter: key});
+    const { activeFilter } = this.state;
+    if (activeFilter !== key) {
+      this.setState({ ...this.state, activeFilter: key });
     } else {
-      this.setState({...this.state, activeFilter: ""});
+      this.setState({ ...this.state, activeFilter: "" });
     }
   };
 
-  filterOnBlur = e => {
+  handleActiveFilters = (bool, key) => {
+    const { activeFilters } = this.state;
+    if (bool) {
+      if (!activeFilters.includes(key)) {
+        this.setState({...this.state, activeFilters: [...activeFilters, key]});
+      }
+    } else {
+      if (activeFilters.includes(key)) {
+        let newActiveFilters = [...activeFilters]
+        newActiveFilters.splice(newActiveFilters.findIndex((item, index) => {return item === key}), 1);
+        this.setState({...this.state, activeFilters: newActiveFilters});
+      }
+    }
+  };
+
+  headerOnBlur = e => {
     // by default, onBlur is fired before the object gaining focus receives it (making it impossible to click on the dropdown)
     // needed to make the the dropdown focusable (by adding tabindex=0) and check to see if the object gaining focus was a child
     // of the object losing focus. currentTarget is the object losing focus, relatedTarget is the object gaining it.
@@ -202,83 +385,39 @@ class BulletList extends Component {
     }
 }
 
-  filterOnChange = (e, key) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const newFilter = {eq: {[key]: e.target.id}};
-    let filters = [...this.state.filter.and];
-    const index = filters.findIndex(v => {
-      return JSON.stringify(v) === JSON.stringify(newFilter);
-    });
-    if (index === -1) {
-      filters.push(newFilter);
-    } else {
-      filters.splice(index,1);
-    }
-    this.setState({...this.state, filter: { and: filters}});
-    console.log(filters);
-  }
-
-  renderFilterMenu = (values, key) => {
-    let filterValues = [...values];
-    filterValues.unshift('(all)');
-    filterValues = filterValues.map(v => {
-      const autoFocus = v === '(all)';
-      return (
-        <div
-        autoFocus={autoFocus}
-        tabIndex={0}
-        className="relative outline-none"
-        id={v}
-        onClick={e => this.filterOnChange(e, key)}
-        key={v}>
-          <input 
-          id={v}
-          className="absolute top-0 left-0 w-4"
-          type="checkbox"
-          value={v}/>
-          <label
-          className="pl-4">
-            {v}
-          </label>
-        </div>
-      );
-    });
-
-    return (
-      <div
-      className="absolute top-8 right-0 bg-white z-10"
-      onBlur={this.filterOnBlur}>
-        {filterValues}
-      </div>
-    );
-  }
-
-  renderTaskHeaderHelper = (name, sortKey, uniqueValues) => {
+  renderTaskHeaderHelper = (name, sortKey) => {
     const isSorted = sortKey === this.state.sortedOn;
-    const isFiltered = this.state.filterOn.includes(sortKey);
-    const isActiveFilter = this.state.activeFilter === sortKey;
+    const isActive = this.state.activeFilters.includes(sortKey);
+    const isFilterOpen = this.state.activeFilter === sortKey;
     const { sortDir } = this.state;
-    const values = uniqueValues[sortKey];
 
     return (
       <div
-        className="relative cursor-pointer"
-        onClick={e => this.toggleSort(e, sortKey)}>
+        className="relative cursor-pointer outline-none"
+        onClick={e => this.toggleSort(e, sortKey)}
+        onBlur={this.headerOnBlur}
+        tabIndex={0}>
         <span
           className="pr-12 whitespace-no-wrap">
           {name}
         </span>
-        {isActiveFilter
-            ?
-            this.renderFilterMenu(values, sortKey)
-            :
-            null
-          }
+        {isFilterOpen
+          ?
+          <FilterMenu 
+          list={this.props.tasks.tasks} 
+          listKey={sortKey} 
+          filter={this.state.filter[sortKey]} 
+          setFilter={filter => this.setState({ ...this.state, filter: {...this.state.filter, [sortKey]: filter} })} 
+          setActive={bool => this.handleActiveFilters(bool, sortKey)}
+          />
+          :
+          null
+        }
         <div
           className="absolute top-0 right-0 w-6 mt-1 hover:opacity-50 cursor-pointer"
-          onClick={e => this.handleFilter(e, sortKey)}>
-          {isFiltered
+          onClick={e => this.toggleFilterMenu(e, sortKey)}
+        >
+          {isActive
             ?
             <HiFilter size={16} />
             :
@@ -298,6 +437,14 @@ class BulletList extends Component {
     );
   }
 
+  getFilter = () => {
+    let filter = { and: [] };
+    for (const [key, value] of Object.entries(this.state.filter)) {
+      filter.and.push(value);
+    }
+    return filter;
+  }
+
   render() {
     const { tasks, tasksLoading } = this.props.tasks;
     const { editTask, createTask, sortedOn, sortDir, filter } = this.state;
@@ -306,18 +453,11 @@ class BulletList extends Component {
     }
 
     let taskList = [...tasks];
-    let uniqueValues = {};
     taskList = taskList.filter(task => {
-      for (const h of HEADERS) {
-        if (h.key in uniqueValues) {
-          uniqueValues[h.key].add(task[h.key])
-        } else {
-          uniqueValues[h.key] = new Set([task[h.key]]);
-        }
-      }
-      return filterProcessor(task, filter);
+      return filterProcessor(task, this.getFilter());
     });
     taskList.sort(sortHelper);
+
     taskList = taskList.map((t, i) => {
       return (
         this.renderTaskRow(t)
@@ -343,7 +483,7 @@ class BulletList extends Component {
           <span className="mx-2">Create Task</span>
         </button>
         <table className="m-2 table-auto">
-          {this.renderTaskHeader(uniqueValues)}
+          {this.renderTaskHeader()}
           {tasksLoading
             ?
             <tbody><tr><td>loading...</td></tr></tbody>
