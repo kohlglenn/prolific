@@ -11,7 +11,7 @@ TaskSchema.add({
         required: true
     },
     group: {
-        type: String
+        type: Schema.Types.ObjectId
         },
     owner: {
         type: Schema.Types.ObjectId,

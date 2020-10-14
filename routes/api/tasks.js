@@ -46,7 +46,7 @@ router.post(
     }
   );
 
-// @route POST api/tasks/delete
+// @route DELETE api/tasks/delete
 // @desc Delete an existing task
 // @access Private
 router.delete(
@@ -54,8 +54,9 @@ router.delete(
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     Task.findById(req.params.id).then(task => {
-      task.remove().then(() => res.json({ success: true }));
-    });
+      return task.remove();
+    }).then(() => res.json({ success: true }))
+    .catch(err => res.json({ success: false}));
   }
 );
 
