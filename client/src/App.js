@@ -39,7 +39,7 @@ function App() {
   return (
     <Provider store={store}>
       <Router>
-        <div>
+        <div className="h-screen w-screen">
           <Route exact path="/" component={Landing} />
           <Route exact path="/register" component={Register} />
           <Route exact path="/login" component={Login} />
