@@ -26,3 +26,12 @@ export const priority = {
     MEDIUM: 'Medium', 
     HIGH: 'High'
 };
+
+export const incrementProgress = p => {
+    const NEXT_PROGRESS = {
+        [progress.NONE]: progress.INPROGRESS,
+        [progress.INPROGRESS]: progress.DONE,
+        [progress.DONE]: progress.NONE
+    };
+    return NEXT_PROGRESS[p];
+};

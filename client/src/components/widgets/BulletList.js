@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { getTasks, updateTask, deleteTask } from '../../actions/taskActions';
-import { COLORS } from '../constants';
+import { COLORS, incrementProgress } from '../constants';
 import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils/DateUtil';
 import { truncate } from '../../utils/StringUtil';
 import PropTypes from 'prop-types';
@@ -190,7 +190,13 @@ FilterMenu.propTypes = {
 
 const FILTERTYPES = ['and', 'or', 'not', 'eq', 'gt', 'lt', 'in'];
 
-// Filter is of the form {'and': [{'eq' : {'title': 'test'}}]}
+/**
+ *  Filter is of the form {'and': [{'eq' : {'title': 'test'}}]}
+ * @param {Object} item document that you want to filter. e.g. {key1: value1, key2: value2} 
+ * @param {Object} filterObj filter object that follows specified EBNF
+ * @returns {boolean} 
+ */
+// 
 const filterProcessor = (item, filterObj) => {
   // e.g. {'eq': {'title': 'my title'}}
   const key = Object.keys(filterObj)[0]; // e.g. 'eq' should only be one key total
@@ -201,7 +207,6 @@ const filterProcessor = (item, filterObj) => {
     filterKey = Object.keys(filter)[0]; // e.g. 'title' can be multiple in 'and' and 'or'
     filterValue = filter[filterKey]; // e.g. 'my title'
   }
-
   switch (key) {
     case 'and':
       for (const f of filter) {
@@ -280,11 +285,13 @@ class BulletList extends Component {
   }
 
   startEdit = (t, e) => {
-    if (e.target.id === "progressIcon") {
-      // UPDATE TASK TO INCREMENT PROGRESS. Can also use this framework for assignee etc maybe? Create a popup based on click location
-    }
     this.setState({ ...this.state, editTask: true, task: t })
   };
+
+  updateProgress = (t,e) => {
+    e.stopPropagation();
+    this.props.updateTask({...t, progress: incrementProgress(t.progress), id: t._id});
+  }
 
   closeModal = () => {
     this.setState({ ...this.state, createTask: false, editTask: false });
@@ -297,7 +304,8 @@ class BulletList extends Component {
         onClick={(e) => { this.startEdit(t, e) }}>
         <td
           className="border px-4 py-2">
-          <div className="flex flex-row">
+          <div className="flex flex-row"
+              onClick={e => this.updateProgress(t, e)}>
             <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={t.progress} />
             <span className="ml-2 whitespace-no-wrap">{t.progress}</span>
           </div>
