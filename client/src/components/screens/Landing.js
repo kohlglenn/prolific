@@ -3,7 +3,9 @@ import { Link, withRouter } from "react-router-dom";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 import { loginUser, registerUser } from "../../actions/authActions";
-import classnames from "classnames";
+
+import { HiOutlineUser, HiOutlineLockClosed, HiOutlineMail, HiOutlineAtSymbol, HiOutlineCheck } from 'react-icons/hi';
+import { FaGithubSquare, FaTwitterSquare, FaLinkedin } from 'react-icons/fa';
 
 const mapStateToProps = state => ({
   auth: state.auth,
@@ -36,50 +38,65 @@ class LoginForm extends Component {
     return (
       <form noValidate onSubmit={this.onSubmit}>
         <div
-          className="">
-          <input
-            className="mx-2"
-            onChange={this.onChange}
-            value={this.state.email}
-            id="email"
-            type="email"
-          />
-          <label
-            className="mx-2"
-            htmlFor="email">
-            Email
-          </label>
-          <span className="text-red-500">
-            {errors.email}
-            {errors.emailnotfound}
-          </span>
-        </div>
-        <div className="input-field col s12">
-          <input
-            onChange={this.onChange}
-            value={this.state.password}
-            id="password"
-            type="password"
-          />
-          <label htmlFor="password">Password</label>
-          <span className="red-text">
-            {errors.password}
-            {errors.passwordincorrect}
-          </span>
-        </div>
-        <div className="col s12" style={{ paddingLeft: "11.250px" }}>
+          style={{ height: "20rem" }}
+          className="flex flex-col justify-around items-center">
+          <div
+            className="flex flex-col items-center w-full">
+            <div
+              className="w-2/3">
+              <label
+                className="text-sm text-gray-600">
+                Email
+            </label>
+              <span className="text-red-500 ml-2">
+                {errors.email}
+                {errors.emailnotfound}
+              </span>
+            </div>
+            <div
+              className="relative w-2/3">
+              <div
+                className="absolute top-0 left-0 w-6 flex items-center justify-center h-full">
+                <HiOutlineMail size={20} />
+              </div>
+              <input
+                className="pl-6 border-b w-full text-xl outline-none border-blue-500"
+                onChange={this.onChange}
+                value={this.state.email}
+                id="email"
+                type="email"
+              />
+            </div>
+          </div>
+          <div
+            className="flex flex-col items-center w-full">
+            <div
+              className="w-2/3">
+              <label
+                className="text-sm text-gray-600">
+                Password
+            </label>
+            </div>
+            <div
+              className="relative w-2/3">
+              <div
+                className="absolute top-0 left-0 w-6 flex items-center justify-center h-full">
+                <HiOutlineLockClosed size={20} />
+              </div>
+              <input
+                className="pl-6 border-b w-full text-xl outline-none border-blue-500"
+                onChange={this.onChange}
+                value={this.state.password}
+                id="password"
+                type="password"
+              />
+            </div>
+          </div>
           <button
-            style={{
-              width: "150px",
-              borderRadius: "3px",
-              letterSpacing: "1.5px",
-              marginTop: "1rem"
-            }}
             type="submit"
-            className="btn btn-large waves-effect waves-light hoverable blue accent-3"
-          >
+            className="text-xl bg-transparent hover:bg-blue-500 border border-blue-500 text-blue-500 rounded-lg hover:text-white hover:border-transparent text-center w-2/3">
             Login
-                </button>
+        </button>
         </div>
       </form>
     );
@@ -119,71 +136,123 @@ class RegisterForm extends Component {
 
     return (
       <form noValidate onSubmit={this.onSubmit}>
-        <div className="input-field col s12">
-          <input
-            onChange={this.onChange}
-            value={this.state.name}
-            error={errors.name}
-            id="name"
-            type="text"
-            className={classnames("", {
-              invalid: errors.name
-            })}
-          />
-          <label htmlFor="name">Name</label>
-          <span className="red-text">{errors.name}</span>
-        </div>
-        <div className="input-field col s12">
-          <input
-            onChange={this.onChange}
-            value={this.state.email}
-            error={errors.email}
-            id="email"
-            type="email"
-            className={classnames("", {
-              invalid: errors.email
-            })}
-          />
-          <label htmlFor="email">Email</label>
-        </div>
-        <div className="input-field col s12">
-          <input
-            onChange={this.onChange}
-            value={this.state.password}
-            error={errors.password}
-            id="password"
-            type="password"
-          />
-          <label htmlFor="password">Password</label>
-          <span className="red-text">{errors.password}</span>
-        </div>
-        <div className="input-field col s12">
-          <input
-            onChange={this.onChange}
-            value={this.state.password2}
-            error={errors.password2}
-            id="password2"
-            type="password"
-            className={classnames("", {
-              invalid: errors.password2
-            })}
-          />
-          <label htmlFor="password2">Confirm Password</label>
-          <span className="red-text">{errors.password2}</span>
-        </div>
-        <div className="col s12" style={{ paddingLeft: "11.250px" }}>
+        <div
+          style={{ height: "20rem" }}
+          className="flex flex-col justify-around items-center">
+          <div
+            className="flex flex-col items-center w-full">
+            <div
+              className="w-2/3">
+              <label
+                className="text-sm text-gray-600">
+                Name
+            </label>
+              <span className="text-red-500 ml-2">
+                {/* No name errors */}
+              </span>
+            </div>
+            <div
+              className="relative w-2/3">
+              <div
+                className="absolute top-0 left-0 w-6 flex items-center justify-center h-full">
+                <HiOutlineUser size={20} />
+              </div>
+              <input
+                className="pl-6 border-b w-full text-xl outline-none border-blue-500"
+                onChange={this.onChange}
+                value={this.state.name}
+                id="name"
+                type="name"
+              />
+            </div>
+          </div>
+          <div
+            className="flex flex-col items-center w-full">
+            <div
+              className="w-2/3">
+              <label
+                className="text-sm text-gray-600">
+                Email
+            </label>
+              <span className="text-red-500 ml-2">
+                {errors.email}
+                {errors.emailnotfound}
+              </span>
+            </div>
+            <div
+              className="relative w-2/3">
+              <div
+                className="absolute top-0 left-0 w-6 flex items-center justify-center h-full">
+                <HiOutlineMail size={20} />
+              </div>
+              <input
+                className="pl-6 border-b w-full text-xl outline-none border-blue-500"
+                onChange={this.onChange}
+                value={this.state.email}
+                id="email"
+                type="email"
+              />
+            </div>
+          </div>
+          <div
+            className="flex flex-col items-center w-full">
+            <div
+              className="w-2/3">
+              <label
+                className="text-sm text-gray-600">
+                Password
+            </label>
+              <span className="text-red-500 ml-2">
+                {errors.password}
+              </span>
+            </div>
+            <div
+              className="relative w-2/3">
+              <div
+                className="absolute top-0 left-0 w-6 flex items-center justify-center h-full">
+                <HiOutlineLockClosed size={20} />
+              </div>
+              <input
+                className="pl-6 border-b w-full text-xl outline-none border-blue-500"
+                onChange={this.onChange}
+                value={this.state.password}
+                id="password"
+                type="password"
+              />
+            </div>
+          </div>
+          <div
+            className="flex flex-col items-center w-full">
+            <div
+              className="w-2/3">
+              <label
+                className="text-sm text-gray-600">
+                Confirm Password
+            </label>
+              <span className="text-red-500 ml-2">
+                {errors.password2}
+              </span>
+            </div>
+            <div
+              className="relative w-2/3">
+              <div
+                className="absolute top-0 left-0 w-6 flex items-center justify-center h-full">
+                <HiOutlineCheck size={20} />
+              </div>
+              <input
+                className="pl-6 border-b w-full text-xl outline-none border-blue-500"
+                onChange={this.onChange}
+                value={this.state.password2}
+                id="password2"
+                type="password"
+              />
+            </div>
+          </div>
           <button
-            style={{
-              width: "150px",
-              borderRadius: "3px",
-              letterSpacing: "1.5px",
-              marginTop: "1rem"
-            }}
             type="submit"
-            className="btn btn-large waves-effect waves-light hoverable blue accent-3"
-          >
-            Sign up
-                </button>
+            className="mt-2 text-xl bg-transparent hover:bg-blue-500 border border-blue-500 text-blue-500 rounded-lg hover:text-white hover:border-transparent text-center w-2/3">
+            Register
+        </button>
         </div>
       </form>
     );
@@ -193,7 +262,7 @@ class RegisterForm extends Component {
 const ConnectedRegisterForm = connect(
   mapStateToProps,
   { registerUser }
-)(RegisterForm);
+)(withRouter(RegisterForm));
 
 class Landing extends Component {
   state = {
@@ -206,36 +275,61 @@ class Landing extends Component {
     if (this.props.auth.isAuthenticated) {
       this.props.history.push("/home");
     }
+    const hashParam = this.props.location.hash.split('#');
+    if (hashParam.includes('login')) {
+      this.setState({ ...this.state, signUp: false, signIn: true });
+    } else if (hashParam.includes('register')) {
+      this.setState({ ...this.state, signUp: true, signIn: false });
+    }
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     if (this.props.auth.isAuthenticated) {
       this.props.history.push("/home");
     }
   }
 
   render() {
-    const { errors } = this.props;
     return (
       <div
-        className="bg-gradient-to-tl from-teal-400 to-blue-500 h-full w-full flex place-items-center">
+        className="bg-gradient-to-tl from-teal-400 to-blue-500 h-full w-full flex flex-col justify-around items-center">
         <div
-          style={{ height: "50%" }}
-          className="bg-white rounded-lg w-1/2 mx-auto flex flex-col">
+          className="flex flex-row justify-center w-1/2 items-center h-16">
+          <div
+            className="mr-1">
+            <HiOutlineAtSymbol size={36} />
+          </div>
+          <span
+            className="text-6xl font-mono">
+            Prolific
+          </span>
+        </div>
+        <div
+          style={{ height: "50%", maxWidth: "30rem", minWidth: "20rem" }}
+          className="bg-white rounded-lg w-1/2 flex flex-col items-center">
           <div
             id="signin signup container"
-            className="flex flex-row w-full justify-around my-4">
-            <span
-              onClick={() => this.setState({ ...this.state, signIn: true, signUp: false })}>
-              Sign in
-            </span>
-            <span
-              onClick={() => this.setState({ ...this.state, signIn: false, signUp: true })}>
-              Sign up
-            </span>
+            className="flex flex-row justify-between w-2/3 h-16 mb-4 items-end">
+            <div
+              className={`border-b-2 ${this.state.signIn ? "border-blue-500" : "hover:bg-blue-200 "} flex items-center justify-center px-4 cursor-pointer`}>
+              <span
+                className="text-lg font-mono font-light"
+                onClick={() => this.setState({ ...this.state, signIn: true, signUp: false })}>
+                Sign In
+              </span>
+            </div>
+            <div
+              className={`border-b-2 ${this.state.signUp ? "border-blue-500" : "hover:bg-blue-200 "} flex items-center justify-center px-4 cursor-pointer`}>
+              <span
+                className="text-lg font-mono font-light"
+                onClick={() => this.setState({ ...this.state, signIn: false, signUp: true })}>
+                Sign Up
+              </span>
+            </div>
           </div>
           <div
             id="form container"
+            className="w-full"
           >
             {this.state.signIn
               ?
@@ -244,6 +338,35 @@ class Landing extends Component {
               <ConnectedRegisterForm />
             }
           </div>
+        </div>
+        <div
+          className="flex flex-row justify-around w-1/2 items-center h-16 flex-wrap"
+          style={{ maxWidth: "30rem", minWidth: "20rem" }}>
+          <Link
+            to="/"
+            className="text-sm hover:opacity-50 hover:underline text-black font-mono">
+            About us
+          </Link>
+          <Link
+            to="/"
+            className="hover:opacity-50">
+            <FaGithubSquare size={30} />
+          </Link>
+          <Link
+            to="/"
+            className="hover:opacity-50">
+            <FaTwitterSquare size={30} />
+          </Link>
+          <Link
+            to="/"
+            className="hover:opacity-50">
+            <FaLinkedin size={30} />
+          </Link>
+          <Link
+            to="/"
+            className="text-sm hover:opacity-50 hover:underline text-black font-mono">
+            Contact us
+          </Link>
         </div>
       </div>
     );
