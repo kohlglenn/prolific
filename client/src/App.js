@@ -11,8 +11,6 @@ import { Provider } from "react-redux";
 import store from "./store";
 
 import Landing from "./components/screens/Landing";
-import Register from "./components/screens/Register";
-import Login from "./components/screens/Login";
 import PrivateRoute from "./components/private-route/PrivateRoute";
 import Home from "./components/screens/Home";
 
@@ -41,8 +39,6 @@ function App() {
       <Router>
         <div className="h-screen w-screen">
           <Route exact path="/" component={Landing} />
-          <Route exact path="/register" component={Register} />
-          <Route exact path="/login" component={Login} />
           <Switch>
             <PrivateRoute exact path="/home" component={Home} />
           </Switch>

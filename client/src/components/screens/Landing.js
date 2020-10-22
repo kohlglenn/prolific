@@ -148,7 +148,7 @@ class RegisterForm extends Component {
                 Name
             </label>
               <span className="text-red-500 ml-2">
-                {/* No name errors */}
+                {errors.name}
               </span>
             </div>
             <div

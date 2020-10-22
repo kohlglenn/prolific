@@ -5,9 +5,10 @@ import { COLORS, incrementProgress } from '../constants';
 import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils/DateUtil';
 import { truncate } from '../../utils/StringUtil';
 import PropTypes from 'prop-types';
+import Draggable from 'react-draggable';
 
 import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
-import { BiSortDown, BiSortUp } from "react-icons/bi";
+import { BiSortDown, BiSortUp, BiDotsVerticalRounded } from "react-icons/bi";
 import { HiFilter, HiOutlineFilter } from 'react-icons/hi';
 import TaskModal from "./TaskModal";
 import PriorityIcon from "./PriorityIcon";
@@ -17,19 +18,6 @@ const SORTDIR = {
   ASC: 1,
   DESC: -1
 };
-
-/**
- * TODO
- * --Unhighlight filter if no filters from column are selected
- * --Show filters on clicking menu and have check marks show up 
- * (this involved coming up with a structure in state to keep track of arbitrary values)
- * --ability to add different kinds of filters (ranges, etc) and state handling of these filters
- * --factor out filter logic. Consider having all filter menu logic be self-contained in a component and filter logic in a queryutil class
- * (will I be able to extract the state I need to if I do this?)
- * --on select all, highlight/unhighlight all choices in filter menu
- * --remove console.log statements
- * --remove null and undefined from filter lists and have all select them by default
- */
 
 /**
  * @param list table of values you want to extract unique values from
@@ -73,7 +61,7 @@ class FilterMenu extends Component {
   };
 
   componentWillUnmount() {
-    const {listKey: key} = this.props;
+    const { listKey: key } = this.props;
     let filteredList = this.state.list.filter((v, i) => {
       return filterProcessor({ [key]: v }, this.props.filter);
     });
@@ -244,6 +232,220 @@ const HEADERS = [
   { name: "Priority", key: "priority" }
 ];
 
+/**
+ * A table with resizable columns and reorder on column drag
+ * PROPS
+ * columns: [{name: "myName", key: "myKey"}] -- consider adding properties to this? "sortable", type="date&time", etc....
+ * data: [{objects that have data for AT LEAST all of keys in columns}]
+ * renderData: fn(dataRow, key) -> React.Component
+ * renderColumn: fn(column) -> React.Component
+ * trClassName: className for table row
+ * tdClassName: className for table desc
+ * thClassName: className for th
+ */
+class Table extends Component {
+  state = {
+    widths: {},
+    windowWidth: 0,
+    columnOrder: []
+  }
+
+  tableRef = React.createRef();
+
+  componentDidMount() {
+    // description of width is found HERE https://stackoverflow.com/questions/21064101/understanding-offsetwidth-clientwidth-scrollwidth-and-height-respectively
+    const totalWidth = this.tableRef.current.clientWidth;
+    // const totalWidth = 400;
+    let myWidths = {};
+    let myColOrder = [];
+    for (const column of this.props.columns) {
+      myWidths[column.key] = Math.round((1 / (this.props.columns.length)) * totalWidth);
+      myColOrder.push(column.key);
+    }
+    console.log(totalWidth);
+    console.log(myWidths);
+    console.log(this.tableRef);
+    this.setState({ ...this.state, widths: myWidths, windowWidth: totalWidth, columnOrder: myColOrder });
+  }
+
+  handleResizeColumn = (e, data, key) => {
+    const { widths: w } = this.state;
+    const nextKey = this.getNextKey(key);
+    this.setState({ ...this.state, widths: { ...w, [key]: w[key] + data.deltaX, [nextKey]: w[nextKey] - data.deltaX } });
+  }
+
+  getNextKey = key => {
+    const index = this.state.columnOrder.findIndex(item => item === key);
+    return this.state.columnOrder[(index + 1) % this.state.columnOrder.length];
+  }
+
+  handleReorderCol = (e, data, key) => {
+    let colWidth = this.state.columnOrder.map(col => {
+      return this.state.widths[col];
+    });
+    // breakpoints are the mid point of each column
+    let colMidpoints = [];
+    for (let i = 0; i < colWidth.length; i++) {
+      if (i > 0) {
+        colMidpoints[i] = colMidpoints[i - 1] + Math.round(0.5 * colWidth[i]) + Math.round(0.5 * colWidth[i - 1]);
+      } else {
+        colMidpoints[i] = Math.round(0.5 * colWidth[i]);
+      }
+    }
+    let colBreakpoints = [];
+    for (let i = 0; i < colWidth.length; i++) {
+      if (i > 0) {
+        colBreakpoints[i] = colBreakpoints[i - 1] + colWidth[i];
+      } else {
+        colBreakpoints[i] = colWidth[i];
+      }
+    }
+    let currIndex = this.state.columnOrder.findIndex(item => item === key);
+    let stopWidth = colMidpoints[currIndex] + data.x;
+    let newIndex = colBreakpoints.findIndex(item => item >= stopWidth);
+    if (newIndex !== currIndex) {
+      let myColOrder = [...this.state.columnOrder];
+      if (newIndex === -1) {
+        myColOrder.splice(currIndex, 1);
+        myColOrder.push(key);
+      } else {
+        let temp = myColOrder[currIndex];
+        if (currIndex > newIndex) {
+          for (let i = currIndex; i >= newIndex; i--) {
+            myColOrder[i] = myColOrder[i - 1];
+          }
+        } else {
+          for (let i = currIndex; i <= newIndex; i++) {
+            myColOrder[i] = myColOrder[i + 1];
+          }
+        }
+        myColOrder[newIndex] = temp;
+      }
+      this.setState({ ...this.state, columnOrder: myColOrder });
+    }
+  }
+
+  renderColItem = (key) => {
+    const columnInfo = this.props.columns.find(item => item.key === key);
+    const isLastCol = key === this.state.columnOrder[this.state.columnOrder.length - 1];
+    return (
+      <td
+        className={`pr-2 ${!isLastCol ? "border-r" : ""} relative`}
+        style={{ width: this.state.widths[key] }}>
+        <Draggable
+          axis="x"
+          handle=".columnReorderHandle"
+          grid={[1, 1]}
+          scale={1}
+          position={{ x: 0, y: 0 }}
+          onStop={(e, data) => this.handleReorderCol(e, data, key)}>
+          <div
+            style={{ cursor: "move" }}
+            className="columnReorderHandle w-full h-full"
+          >
+            {this.props.renderColumn(columnInfo)}
+          </div>
+        </Draggable>
+        {!isLastCol
+          ?
+          <Draggable
+            axis="x"
+            handle=".columnResizeHandle"
+            grid={[1, 0]}
+            scale={1}
+            position={{ x: 0, y: 0 }}
+            onDrag={(e, data) => this.handleResizeColumn(e, data, key)}>
+            <div
+              style={{ cursor: "col-resize" }}
+              className="h-full w-2 absolute top-0 right-0 z-50 opacity-0 columnResizeHandle">
+            </div>
+          </Draggable>
+          : null
+        }
+      </td>
+    );
+  };
+
+  renderCol = () => {
+    return (
+      <tr>
+        {this.state.columnOrder.map((key, i) => {
+          return this.renderColItem(key, i);
+        })}
+      </tr>
+    )
+  };
+
+  renderRow = row => {
+    return (
+      <tr>
+        {this.state.columnOrder.map((key, i) => {
+          return this.renderRowItem(row, key, i);
+        })}
+      </tr>
+    )
+  };
+
+  renderRowItem = (row, key, index) => {
+    return (
+      <td
+        className="truncate"
+        style={{ width: this.state.widths[key] }}>
+        {this.props.renderData(row, key)}
+      </td>
+    );
+  };
+
+  render() {
+    const { widths, windowWidth } = this.state;
+
+    return (
+      <table
+        ref={this.tableRef}
+        style={{ width: windowWidth }}
+        className="">
+        <thead>
+          {this.renderCol()}
+        </thead>
+        <tbody>
+          {this.props.data.map(row => this.renderRow(row))}
+        </tbody>
+      </table>
+    );
+  }
+}
+
+class InputResizer extends Component {
+  state = {
+    width: {}
+  }
+
+  componentDidMount() {
+    this.setState({width: this.props.width});
+  }
+
+  onChange = e => {
+    if (e.target.value.length > this.props.value.length) {
+      this.setState({width: this.state.width + 10});
+    } else if (e.target.value.length < this.props.value.length) {
+      this.setState({width: this.state.width - 10});
+    }
+    this.props.onChange(e);
+  }
+
+  render() {
+    return (
+      <input
+        onClick={e => e.stopPropagation()}
+        id={this.props.id}
+        onChange={this.onChange}
+        className={this.props.className}
+        value={this.props.value}
+        style={{...this.props.style, width: this.state.width}} />
+    )
+  }
+}
+
 class BulletList extends Component {
   state = {
     createTask: false,
@@ -259,7 +461,20 @@ class BulletList extends Component {
   };
 
   componentDidMount() {
-    this.props.getTasks(this.props.auth.user.id);
+    this.props.getTasks(this.props.auth.user.id).then(() => {
+      let taskValues = this.props.tasks.tasks.map(t => {
+        let retVal = {};
+        for (const prop in t) {
+          if (prop !== "_id") {
+            Object.assign(retVal, {[`${t._id}${prop}`]: t[prop]});
+          }
+        }
+        return retVal;
+      });
+      let taskValueObj = {};
+      taskValues.forEach(t => Object.assign(taskValueObj, t));
+      this.setState({...this.state, ...taskValueObj});
+    });
     let myFilter = {};
     for (const h of HEADERS) {
       myFilter[h.key] = {};
@@ -280,7 +495,8 @@ class BulletList extends Component {
       ...this.state,
       createTask: false,
       editTask: false,
-      task: undefined
+      task: undefined,
+      widths: {}
     });
   }
 
@@ -288,38 +504,57 @@ class BulletList extends Component {
     this.setState({ ...this.state, editTask: true, task: t })
   };
 
-  updateProgress = (t,e) => {
+  updateProgress = (t, e) => {
     e.stopPropagation();
-    this.props.updateTask({...t, progress: incrementProgress(t.progress), id: t._id});
+    this.props.updateTask({ ...t, progress: incrementProgress(t.progress), id: t._id });
   }
 
   closeModal = () => {
     this.setState({ ...this.state, createTask: false, editTask: false });
   }
 
+  inlineTaskOnChange = (e, t) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState({...this.state, [`${e.target.id}`]: e.target.value});
+  }
+
+  /**
+   * TODO
+   * make tasks look like items on a line of paper
+   * on click or on select make tasks fields editable (hard!) -- may need to come up with custom calendar??
+   * Look at external calendar libraries
+   * Add ability for draggable columns
+   */
+
   renderTaskRow = t => {
     return (
       <tr key={t._id}
-        className="bg-gray-100 hover:bg-blue-100 cursor-pointer"
+        className="hover:bg-blue-100 cursor-pointer border-b border-blue-300"
         onClick={(e) => { this.startEdit(t, e) }}>
         <td
-          className="border px-4 py-2">
+          className="px-4 py-2">
           <div className="flex flex-row"
-              onClick={e => this.updateProgress(t, e)}>
+            onClick={e => this.updateProgress(t, e)}>
             <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={t.progress} />
             <span className="ml-2 whitespace-no-wrap">{t.progress}</span>
           </div>
         </td>
-        <td className="border px-4 py-2 max-w-lg">
+        <td className="px-4 py-2 max-w-lg">
           <div className="flex flex-row justify-between">
-            <span className="whitespace-no-wrap">{truncate(t.title, 50)}</span>
+            <InputResizer
+              id={`${t._id}title`}
+              onChange={e => this.inlineTaskOnChange(e, t)}
+              className="whitespace-no-wrap w-auto"
+              value={this.state[`${t._id}title`]}
+              width={8*t.title.length} />
           </div>
         </td>
-        <td className="border px-4 py-2 whitespace-no-wrap">{t.dueDate ? fullDateStringToYyyymmdd(t.dueDate) + " " + fullDateStringToHourMinPm(t.dueDate) : ""}</td>
-        <td className="border px-4 py-2">{t.group}</td>
-        <td className="border px-4 py-2">{t.assigned}</td>
-        <td className="border px-4 py-2"><PriorityIcon priority={t.priority} /></td>
-        <td className="border px-4 py-2">{<AiOutlineClose onClick={() => this.deleteTask(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} />}</td>
+        <td className="px-4 py-2 whitespace-no-wrap">{t.dueDate ? fullDateStringToYyyymmdd(t.dueDate) + " " + fullDateStringToHourMinPm(t.dueDate) : ""}</td>
+        <td className="px-4 py-2">{t.group}</td>
+        <td className="px-4 py-2">{t.assigned}</td>
+        <td className="px-4 py-2"><PriorityIcon priority={t.priority} /></td>
+        <td className="px-4 py-2">{<AiOutlineClose onClick={() => this.deleteTask(t)} className="hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} />}</td>
       </tr>
     );
   }
@@ -373,13 +608,13 @@ class BulletList extends Component {
     const { activeFilters } = this.state;
     if (bool) {
       if (!activeFilters.includes(key)) {
-        this.setState({...this.state, activeFilters: [...activeFilters, key]});
+        this.setState({ ...this.state, activeFilters: [...activeFilters, key] });
       }
     } else {
       if (activeFilters.includes(key)) {
         let newActiveFilters = [...activeFilters]
-        newActiveFilters.splice(newActiveFilters.findIndex((item, index) => {return item === key}), 1);
-        this.setState({...this.state, activeFilters: newActiveFilters});
+        newActiveFilters.splice(newActiveFilters.findIndex((item, index) => { return item === key }), 1);
+        this.setState({ ...this.state, activeFilters: newActiveFilters });
       }
     }
   };
@@ -389,9 +624,9 @@ class BulletList extends Component {
     // needed to make the the dropdown focusable (by adding tabindex=0) and check to see if the object gaining focus was a child
     // of the object losing focus. currentTarget is the object losing focus, relatedTarget is the object gaining it.
     if (!e.currentTarget.contains(e.relatedTarget)) {
-        this.setState({ ...this.state, activeFilter: "" });
+      this.setState({ ...this.state, activeFilter: "" });
     }
-}
+  }
 
   renderTaskHeaderHelper = (name, sortKey) => {
     const isSorted = sortKey === this.state.sortedOn;
@@ -411,12 +646,64 @@ class BulletList extends Component {
         </span>
         {isFilterOpen
           ?
-          <FilterMenu 
-          list={this.props.tasks.tasks} 
-          listKey={sortKey} 
-          filter={this.state.filter[sortKey]} 
-          setFilter={filter => this.setState({ ...this.state, filter: {...this.state.filter, [sortKey]: filter} })} 
-          setActive={bool => this.handleActiveFilters(bool, sortKey)}
+          <FilterMenu
+            list={this.props.tasks.tasks}
+            listKey={sortKey}
+            filter={this.state.filter[sortKey]}
+            setFilter={filter => this.setState({ ...this.state, filter: { ...this.state.filter, [sortKey]: filter } })}
+            setActive={bool => this.handleActiveFilters(bool, sortKey)}
+          />
+          :
+          null
+        }
+        <div
+          className="absolute top-0 right-0 w-6 mt-1 hover:opacity-50 cursor-pointer"
+          onClick={e => this.toggleFilterMenu(e, sortKey)}
+        >
+          {isActive
+            ?
+            <HiFilter size={16} />
+            :
+            <HiOutlineFilter size={16} />
+          }
+        </div>
+        {isSorted
+          ?
+          <div
+            className="absolute top-0 right-6 w-6 mt-1">
+            {sortDir === SORTDIR.ASC
+              ? <BiSortDown size={20} />
+              : <BiSortUp size={20} />}
+          </div>
+          : null}
+      </div>
+    );
+  }
+
+  renderTaskTableHeaderHelper = (name, sortKey) => {
+    const isSorted = sortKey === this.state.sortedOn;
+    const isActive = this.state.activeFilters.includes(sortKey);
+    const isFilterOpen = this.state.activeFilter === sortKey;
+    const { sortDir } = this.state;
+
+    return (
+      <div
+        className="relative cursor-pointer outline-none"
+        onClick={e => this.toggleSort(e, sortKey)}
+        onBlur={this.headerOnBlur}
+        tabIndex={0}>
+        <span
+          className="pr-12 whitespace-no-wrap">
+          {name.name}
+        </span>
+        {isFilterOpen
+          ?
+          <FilterMenu
+            list={this.props.tasks.tasks}
+            listKey={sortKey}
+            filter={this.state.filter[sortKey]}
+            setFilter={filter => this.setState({ ...this.state, filter: { ...this.state.filter, [sortKey]: filter } })}
+            setActive={bool => this.handleActiveFilters(bool, sortKey)}
           />
           :
           null

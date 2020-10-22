@@ -165,8 +165,7 @@ class TaskModal extends Component {
     render() {
         const { name } = this.props.auth.user;
         return (
-            <div className="top-0 left-0 h-screen w-screen absolute z-10 flex place-items-center bg-black bg-opacity-50"
-                style={{}}>
+            <div className="top-0 left-0 h-screen w-screen absolute z-10 flex place-items-center bg-black bg-opacity-50">
                 <div className="bg-white w-1/2 m-auto rounded-lg">
                     <div className="flex flex-row-reverse place-items-start">
                             <AiOutlineClose onClick={this.closeModal} className="mt-2 mr-2 hover:opacity-50 cursor-pointer" size={20} color={COLORS.gray800} />

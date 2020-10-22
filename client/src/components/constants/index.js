@@ -4,7 +4,8 @@ export const COLORS = {
     orange500: "rgb(237,137,54)",
     red500: "rgb(245,101,101)",
     red800: "rgb(155,44,44)",
-    blue500: "rgb(66,153,225)"
+    blue500: "rgb(66,153,225)",
+    green500: "rgb(72, 187, 120)"
 };
 
 // make sure to update models as well
