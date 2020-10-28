@@ -16,7 +16,7 @@ class Header extends Component {
   render() {
     return (
       <div>
-        <div className="inline-block ml-4">
+        <div className="inline-block">
           <span className="text-lg">Hey there, <span className="font-bold">{`${this.state.name}`}</span>!</span>
         </div>
       </div>

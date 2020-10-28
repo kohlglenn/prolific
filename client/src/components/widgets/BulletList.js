@@ -7,7 +7,7 @@ import { truncate } from '../../utils/StringUtil';
 import PropTypes from 'prop-types';
 import Draggable from 'react-draggable';
 
-import { AiOutlinePlus, AiOutlineClose } from "react-icons/ai";
+import { AiOutlinePlus, AiOutlineClose, AiOutlineEdit } from "react-icons/ai";
 import { BiSortDown, BiSortUp, BiDotsVerticalRounded } from "react-icons/bi";
 import { HiFilter, HiOutlineFilter } from 'react-icons/hi';
 import TaskModal from "./TaskModal";
@@ -18,6 +18,8 @@ const SORTDIR = {
   ASC: 1,
   DESC: -1
 };
+
+const FONT_SIZE = 8;
 
 /**
  * @param list table of values you want to extract unique values from
@@ -421,14 +423,14 @@ class InputResizer extends Component {
   }
 
   componentDidMount() {
-    this.setState({width: this.props.width});
+    this.setState({width: this.props.width + this.props.minWidth});
   }
 
   onChange = e => {
     if (e.target.value.length > this.props.value.length) {
-      this.setState({width: this.state.width + 10});
+      this.setState({width: this.state.width + FONT_SIZE});
     } else if (e.target.value.length < this.props.value.length) {
-      this.setState({width: this.state.width - 10});
+      this.setState({width: Math.max(this.props.minWidth, this.state.width - FONT_SIZE)});
     }
     this.props.onChange(e);
   }
@@ -469,6 +471,7 @@ class BulletList extends Component {
             Object.assign(retVal, {[`${t._id}${prop}`]: t[prop]});
           }
         }
+        retVal[`${t._id}editVisbile`] = false;
         return retVal;
       });
       let taskValueObj = {};
@@ -480,6 +483,24 @@ class BulletList extends Component {
       myFilter[h.key] = {};
     }
     this.setState({ ...this.state, owner: this.props.auth.user.id, filter: myFilter });
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.tasks !== this.props.tasks) {
+      let taskValues = this.props.tasks.tasks.map(t => {
+        let retVal = {};
+        for (const prop in t) {
+          if (prop !== "_id") {
+            Object.assign(retVal, {[`${t._id}${prop}`]: t[prop]});
+          }
+        }
+        retVal[`${t._id}editVisbile`] = false;
+        return retVal;
+      });
+      let taskValueObj = {};
+      taskValues.forEach(t => Object.assign(taskValueObj, t));
+      this.setState({...this.state, ...taskValueObj});
+    }
   }
 
   onChange = e => {
@@ -505,8 +526,10 @@ class BulletList extends Component {
   };
 
   updateProgress = (t, e) => {
+    e.preventDefault();
     e.stopPropagation();
-    this.props.updateTask({ ...t, progress: incrementProgress(t.progress), id: t._id });
+    const key = `${t._id}progress`;
+    this.setState({...this.state, [key]: incrementProgress(this.state[key])});
   }
 
   closeModal = () => {
@@ -519,6 +542,21 @@ class BulletList extends Component {
     this.setState({...this.state, [`${e.target.id}`]: e.target.value});
   }
 
+  taskRowOnBlur = (e, t) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      // update task logic goes here
+      let newTask = {};
+      for (const s in this.state) {
+        if (s.includes(t._id)) { // i.e. it is a task property
+          const key = s.replace(t._id, '');
+          newTask[key] = this.state[s];
+        }
+      }
+      newTask['id'] = t._id;
+      this.props.updateTask(newTask);
+    }
+  }
+
   /**
    * TODO
    * make tasks look like items on a line of paper
@@ -526,28 +564,37 @@ class BulletList extends Component {
    * Look at external calendar libraries
    * Add ability for draggable columns
    */
-
   renderTaskRow = t => {
+    const editVisbile = `${t._id}editVisible`;
     return (
       <tr key={t._id}
-        className="hover:bg-blue-100 cursor-pointer border-b border-blue-300"
-        onClick={(e) => { this.startEdit(t, e) }}>
+        tabIndex={0}
+        onBlur={e => this.taskRowOnBlur(e, t)}
+        className="hover:bg-blue-100 cursor-pointer border-b border-blue-300 outline-none"
+        onClick={(e) => { this.startEdit(t, e) }}
+        onMouseOver={() => this.setState({...this.state, [editVisbile]: true})}
+        onMouseOut={() => this.setState({...this.state, [editVisbile]: false})}>
         <td
           className="px-4 py-2">
           <div className="flex flex-row"
             onClick={e => this.updateProgress(t, e)}>
-            <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={t.progress} />
-            <span className="ml-2 whitespace-no-wrap">{t.progress}</span>
+            <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={this.state[`${t._id}progress`]} />
+            <span className="ml-2 whitespace-no-wrap">{this.state[`${t._id}progress`]}</span>
           </div>
         </td>
         <td className="px-4 py-2 max-w-lg">
-          <div className="flex flex-row justify-between">
+          <div className="h-full w-full relative pr-6">
             <InputResizer
               id={`${t._id}title`}
               onChange={e => this.inlineTaskOnChange(e, t)}
               className="whitespace-no-wrap w-auto"
               value={this.state[`${t._id}title`]}
-              width={8*t.title.length} />
+              width={FONT_SIZE*t.title.length}
+              minWidth={20} />
+              <div
+              className={`${this.state[editVisbile] ? "opacity-100" : "opacity-0"} h-full w-6 flex items-center justify-center absolute top-0 right-0`}>
+                <AiOutlineEdit className="hover:opacity-75" size={20} color={COLORS.gray500}/>
+              </div>
           </div>
         </td>
         <td className="px-4 py-2 whitespace-no-wrap">{t.dueDate ? fullDateStringToYyyymmdd(t.dueDate) + " " + fullDateStringToHourMinPm(t.dueDate) : ""}</td>
@@ -772,12 +819,12 @@ class BulletList extends Component {
           :
           null}
         <button
-          className="mr-4 mb-2 bg-transparent hover:bg-gray-700 border-2 border-gray-800 text-gray-800 rounded-lg hover:text-white hover:border-transparent flex place-items-center w-32"
+          className="mr-4 my-2 bg-transparent hover:bg-gray-700 border-2 border-gray-800 text-gray-800 rounded-lg hover:text-white hover:border-transparent flex place-items-center w-32"
           onClick={() => this.setState({ ...this.state, createTask: true })}>
           <AiOutlinePlus size={22} className="ml-1" />
           <span className="mx-2">Create Task</span>
         </button>
-        <table className="m-2 table-auto">
+        <table className="my-2 table-auto">
           {this.renderTaskHeader()}
           {tasksLoading
             ?

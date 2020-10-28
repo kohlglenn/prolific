@@ -23,7 +23,7 @@ class Dashboard extends Component {
     return (
       <div className={`inline-flex absolute top-0 left-0 transition-transform duration-300 transform ${isNavBarOpen ? "" : "-translate-x-48"}`}>
         <NavBar toggleOpen={this.toggleNavBar} isOpen={this.state.isNavBarOpen} />
-        <div>
+        <div className="px-2">
           <Header />
           <BulletList user={this.props.auth.user} />
         </div>
