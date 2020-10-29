@@ -19,6 +19,10 @@ router.get(
     }
   );
 
+router.get("/test", (req, res) => {
+  res.send("Success");
+});
+
 // @route POST api/tasks/create
 // @desc Create a new task
 // @access Private
