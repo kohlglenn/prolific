@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const passport = require("passport");
+const path = require('path');
 
 const users = require("./routes/api/users");
 const tasks = require("./routes/api/tasks");
@@ -26,6 +27,12 @@ mongoose
   )
   .then(() => console.log("MongoDB successfully connected"))
   .catch(err => console.log(err));
+
+app.use(express.static(path.join(__dirname, './client/build')));
+
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, './client/build', 'index.html'));
+});
 
 // Passport middleware
 app.use(passport.initialize());
