@@ -19,7 +19,7 @@ router.get(
     }
   );
 
-router.get("/test", (req, res) => {
+router.get("/", (req, res) => {
   res.send("Success");
 });
 
