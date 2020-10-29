@@ -301,7 +301,7 @@ class Landing extends Component {
           </div>
           <span
             className="text-6xl font-mono">
-            Prolific
+            ProlificTest
           </span>
         </div>
         <div
