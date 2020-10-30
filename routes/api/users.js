@@ -45,6 +45,23 @@ router.post("/register", (req, res) => {
   });
 });
 
+// @route GET api/users/:id
+// @desc Get user by ID
+// @access Public
+router.get("/:id", (req, res) => {
+  let id = req.params.id;
+
+  User.findById(id).then(user => {
+    res.status(200).json({
+      id: id,
+      name: user.name,
+      email: user.email
+    });
+  }).catch(err => {
+    res.status(200).send(`User ${id} not found.`);
+  })
+});
+
 // @route POST api/users/login
 // @desc Login user and return JWT token
 // @access Public

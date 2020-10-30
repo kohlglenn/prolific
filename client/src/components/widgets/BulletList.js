@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import { getTasks, updateTask, deleteTask } from '../../actions/taskActions';
+import { getGroups } from '../../actions/groupActions';
 import { COLORS, incrementProgress } from '../constants';
 import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils/DateUtil';
 import { truncate } from '../../utils/StringUtil';
@@ -478,6 +479,18 @@ class BulletList extends Component {
       taskValues.forEach(t => Object.assign(taskValueObj, t));
       this.setState({...this.state, ...taskValueObj});
     });
+    this.props.getGroups(this.props.auth.user.id).then(res => {
+      console.log(res);
+      console.log(this.props);
+    })
+    // this.props.getGroups(this.props.auth.user.id).then(() => {
+    //   let groupPromises = this.props.groups.groups.map(g => {
+    //     return this.props.getUser(g);
+    //   });
+    //   return Promise.all(groupPromises);
+    // }).then(allUsers => {
+
+    // });
     let myFilter = {};
     for (const h of HEADERS) {
       myFilter[h.key] = {};
@@ -840,10 +853,11 @@ class BulletList extends Component {
 
 const mapStateToProps = state => ({
   auth: state.auth,
-  tasks: state.tasks
+  tasks: state.tasks,
+  groups: state.groups
 });
 
 export default connect(
   mapStateToProps,
-  { getTasks, updateTask, deleteTask }
+  { getTasks, updateTask, deleteTask, getGroups }
 )(BulletList);

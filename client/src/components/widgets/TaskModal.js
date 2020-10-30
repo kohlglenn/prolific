@@ -9,8 +9,6 @@ import ProgressIcon from './ProgressIcon';
 import PriorityIcon from "./PriorityIcon";
 import TimeCombobox from "./TimeCombobox";
 
-// TODO: Update task button and hook up to edit task api
-
 // REQUIRES: edit xor create to be true
 class TaskModal extends Component {
     state = {

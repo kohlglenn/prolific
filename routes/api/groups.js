@@ -34,7 +34,7 @@ router.get(
 // @access Private
 router.post(
     "/create",
-    // passport.authenticate("jwt", { session: false }),
+    passport.authenticate("jwt", { session: false }),
     (req, res) => {
         const NEW_GROUP = new Group({
             name: req.body.name,
