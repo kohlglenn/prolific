@@ -26,13 +26,17 @@ export const getGroups = id => dispatch => {
   return axios
     .get(`/api/groups/users/${id}`)
     .then(res => {
+      // res returns a list groups, defined in models/groups in the backend
       let groupPromise = [];
+
+      // for each user within each group, get the Promise containing user details and put it in groupPromise
       res.data.map(group => {
         return group.users.forEach(u => {
            groupPromise.push(axios.get(`/api/users/${u}`));
         })
       });
       return Promise.all(groupPromise).then(users => {
+        // augment each 'user' in a group with additional information
         let groupsWithUsers = res.data;
         let formattedUsers = users.map(u => u.data);
         groupsWithUsers = groupsWithUsers.map(group => {

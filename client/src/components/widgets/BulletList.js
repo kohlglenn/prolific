@@ -479,18 +479,7 @@ class BulletList extends Component {
       taskValues.forEach(t => Object.assign(taskValueObj, t));
       this.setState({...this.state, ...taskValueObj});
     });
-    this.props.getGroups(this.props.auth.user.id).then(res => {
-      console.log(res);
-      console.log(this.props);
-    })
-    // this.props.getGroups(this.props.auth.user.id).then(() => {
-    //   let groupPromises = this.props.groups.groups.map(g => {
-    //     return this.props.getUser(g);
-    //   });
-    //   return Promise.all(groupPromises);
-    // }).then(allUsers => {
-
-    // });
+    this.props.getGroups(this.props.auth.user.id);
     let myFilter = {};
     for (const h of HEADERS) {
       myFilter[h.key] = {};
@@ -570,13 +559,6 @@ class BulletList extends Component {
     }
   }
 
-  /**
-   * TODO
-   * make tasks look like items on a line of paper
-   * on click or on select make tasks fields editable (hard!) -- may need to come up with custom calendar??
-   * Look at external calendar libraries
-   * Add ability for draggable columns
-   */
   renderTaskRow = t => {
     const editVisbile = `${t._id}editVisible`;
     return (
