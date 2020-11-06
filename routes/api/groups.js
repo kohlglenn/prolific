@@ -45,13 +45,17 @@ router.post(
 // @access Private
 router.delete(
     "/delete/:id",
-    passport.authenticate("jwt", { session: false }),
+    // passport.authenticate("jwt", { session: false }),
     (req, res) => {
 
         Group.findById(req.params.id).then(group => {
+            if (group.name === 'root') {
+                // TODO: Need to add logic that lets you delete root group if user no longer exists
+                return Promise.reject("Cannot delete root group");
+            }
             return group.remove();
         }).then(() => res.json({ success: true }))
-            .catch(err => res.json({ success: false }));
+            .catch(err => res.json(err));
     }
 );
 
