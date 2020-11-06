@@ -4,6 +4,7 @@ const passport = require('passport');
 
 // Load Task model
 const Group = require('../../models/Group');
+const createGroup = require('./util');
 
 // @route GET api/groups/:id
 // @desc Get a group by id
@@ -29,22 +30,14 @@ router.get(
     }
 );
 
+
 // @route POST api/groups/create
 // @desc Creates a new group
 // @access Private
 router.post(
     "/create",
     passport.authenticate("jwt", { session: false }),
-    (req, res) => {
-        const NEW_GROUP = new Group({
-            name: req.body.name,
-            users: JSON.parse(req.body.users)
-        });
-
-        NEW_GROUP.save()
-            .then(group => res.json(group))
-            .catch(err => console.log(err));
-    }
+    createGroup
 );
 
 // @route DELETE api/groups/delete/:id

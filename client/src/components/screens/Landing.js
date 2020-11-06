@@ -287,6 +287,14 @@ class Landing extends Component {
     if (this.props.auth.isAuthenticated) {
       this.props.history.push("/home");
     }
+    if (prevProps.location != this.props.location) {
+      const hashParam = this.props.location.hash.split('#');
+      if (hashParam.includes('login')) {
+        this.setState({ ...this.state, signUp: false, signIn: true });
+      } else if (hashParam.includes('register')) {
+        this.setState({ ...this.state, signUp: true, signIn: false });
+      }
+    }
   }
 
   render() {

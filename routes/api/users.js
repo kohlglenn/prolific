@@ -10,6 +10,7 @@ const validateLoginInput = require("../../validation/login");
 
 // Load User model
 const User = require("../../models/User");
+const createGroup = require('./util');
 
 // @route POST api/users/register
 // @desc Register user
@@ -37,7 +38,10 @@ router.post("/register", (req, res) => {
           newUser.password = hash;
           newUser
             .save()
-            .then(user => res.json(user))
+            .then(user => {
+              res.json(user);
+              createGroup({body: {name: "root", users: JSON.stringify([user._id])}}, {json: arg => console.log(arg)});
+            })
             .catch(err => console.log(err));
         });
       });
