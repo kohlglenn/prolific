@@ -678,12 +678,12 @@ class BulletList extends Component {
 
     return (
       <div
-        className="relative cursor-pointer outline-none"
+        className="relative cursor-pointer outline-none flex items-start"
         onClick={e => this.toggleSort(e, sortKey)}
         onBlur={this.headerOnBlur}
         tabIndex={0}>
         <span
-          className="pr-12 whitespace-no-wrap">
+          className="pr-12 whitespace-no-wrap ml-4">
           {name}
         </span>
         {isFilterOpen

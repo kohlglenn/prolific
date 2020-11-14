@@ -5,6 +5,7 @@ export const getDate = () => {
 export const dateToHhmm = d => {
     let h = d.getHours();
     h = addZero(h);
+    if (h === "00") h = "12"; // edge case formatting
     const m = addZero(d.getMinutes());
     return `${h}:${m}`;
 };
@@ -48,6 +49,7 @@ export const fullDateStringToHourMinPm = s => {
     const ampm = h >= 12 ? "pm" : "am";
     h = h >= 12 ? h - 12: h;
     h = addZero(h);
+    if (h === "00") h = "12"; // edge case formatting
     const m = addZero(date.getMinutes());
     return `${h}:${m} ${ampm}`;
 }
