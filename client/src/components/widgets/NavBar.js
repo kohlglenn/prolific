@@ -22,6 +22,10 @@ class NavBar extends Component {
         this.props.logoutUser();
     };
 
+    alertNotImplemented = e => {
+        alert("Feature not implemented, check back soon!")
+    }
+
     render() {
         const { isOpen } = this.props; // drilled down from screen
         return (
@@ -50,6 +54,7 @@ class NavBar extends Component {
                                     </Link>
                                     <Link 
                                     to="/home" 
+                                    onClick={this.alertNotImplemented}
                                     className="hover:opacity-50 flex place-items-center" 
                                     style={{ color: COLORS.gray }}>
                                         <BsCalendar className="inline mr-3" size={22} color={COLORS.gray} />
@@ -58,6 +63,7 @@ class NavBar extends Component {
                                     <Link 
                                     to="/home" 
                                     className="hover:opacity-50 flex place-items-center" 
+                                    onClick={this.alertNotImplemented}
                                     style={{ color: COLORS.gray }}>
                                         <FaRegStickyNote className="inline mr-3" size={22} color={COLORS.gray} />
                                         Board

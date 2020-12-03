@@ -572,7 +572,7 @@ class BulletList extends Component {
           className="px-4 py-2">
           <div className="flex flex-row"
             onClick={e => this.updateProgress(t, e)}>
-            <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={this.state[`${t._id}progress`]} />
+            <ProgressIcon className="hover:opacity-50 cursor-pointer" id={"progressIcon"} progress={this.state[`${t._id}progress`]} />
             <span className="ml-2 whitespace-no-wrap">{this.state[`${t._id}progress`]}</span>
           </div>
         </td>

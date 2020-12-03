@@ -297,6 +297,10 @@ class Landing extends Component {
     }
   }
 
+  alertNotImplemented = e => {
+    alert("Feature not implemented, check back soon!")
+  }
+
   render() {
     return (
       <div
@@ -352,26 +356,31 @@ class Landing extends Component {
           style={{ maxWidth: "30rem", minWidth: "20rem" }}>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="text-sm hover:opacity-50 hover:underline text-black font-mono">
             About us
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="hover:opacity-50">
             <FaGithubSquare size={30} />
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="hover:opacity-50">
             <FaTwitterSquare size={30} />
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="hover:opacity-50">
             <FaLinkedin size={30} />
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="text-sm hover:opacity-50 hover:underline text-black font-mono">
             Contact us
           </Link>
