@@ -10,6 +10,7 @@ const validateLoginInput = require("../../validation/login");
 
 // Load User model
 const User = require("../../models/User");
+const createGroup = require('./util');
 
 // @route POST api/users/register
 // @desc Register user
@@ -37,12 +38,32 @@ router.post("/register", (req, res) => {
           newUser.password = hash;
           newUser
             .save()
-            .then(user => res.json(user))
+            .then(user => {
+              res.json(user);
+              createGroup({body: {name: "root", users: JSON.stringify([user._id])}}, {json: arg => console.log(arg)});
+            })
             .catch(err => console.log(err));
         });
       });
     }
   });
+});
+
+// @route GET api/users/:id
+// @desc Get user by ID
+// @access Public
+router.get("/:id", (req, res) => {
+  let id = req.params.id;
+
+  User.findById(id).then(user => {
+    res.status(200).json({
+      id: id,
+      name: user.name,
+      email: user.email
+    });
+  }).catch(err => {
+    res.status(200).send(`User ${id} not found.`);
+  })
 });
 
 // @route POST api/users/login

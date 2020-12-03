@@ -287,6 +287,18 @@ class Landing extends Component {
     if (this.props.auth.isAuthenticated) {
       this.props.history.push("/home");
     }
+    if (prevProps.location != this.props.location) {
+      const hashParam = this.props.location.hash.split('#');
+      if (hashParam.includes('login')) {
+        this.setState({ ...this.state, signUp: false, signIn: true });
+      } else if (hashParam.includes('register')) {
+        this.setState({ ...this.state, signUp: true, signIn: false });
+      }
+    }
+  }
+
+  alertNotImplemented = e => {
+    alert("Feature not implemented, check back soon!")
   }
 
   render() {
@@ -344,26 +356,31 @@ class Landing extends Component {
           style={{ maxWidth: "30rem", minWidth: "20rem" }}>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="text-sm hover:opacity-50 hover:underline text-black font-mono">
             About us
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="hover:opacity-50">
             <FaGithubSquare size={30} />
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="hover:opacity-50">
             <FaTwitterSquare size={30} />
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="hover:opacity-50">
             <FaLinkedin size={30} />
           </Link>
           <Link
             to="/"
+            onClick={this.alertNotImplemented}
             className="text-sm hover:opacity-50 hover:underline text-black font-mono">
             Contact us
           </Link>

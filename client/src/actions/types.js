@@ -9,3 +9,10 @@ export const UPDATE_TASK = "UPDATE_TASK";
 export const DELETE_TASK = "DELETE_TASK";
 export const GET_TASKS = "GET_TASKS";
 export const TASKS_LOADING = "TASKS_LOADING";
+
+// Groups
+export const GET_GROUP_BY_ID = "GET_GROUP_BY_ID";
+export const GET_GROUPS_BY_USER_ID = "GET_GROUPS_BY_USER_ID";
+export const CREATE_GROUP = "CREATE_GROUP";
+export const DELETE_GROUP_BY_ID = "DELETE_GROUP_BY_ID";
+export const UPDATE_GROUP_BY_ID = "UPDATE_GROUP_BY_ID";

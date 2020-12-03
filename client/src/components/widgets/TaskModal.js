@@ -9,8 +9,6 @@ import ProgressIcon from './ProgressIcon';
 import PriorityIcon from "./PriorityIcon";
 import TimeCombobox from "./TimeCombobox";
 
-// TODO: Update task button and hook up to edit task api
-
 // REQUIRES: edit xor create to be true
 class TaskModal extends Component {
     state = {
@@ -51,6 +49,8 @@ class TaskModal extends Component {
 
     onChange = e => {
         // make sure the id of the component matches the state you want to change. e.g. group
+        console.log(e.target.id);
+        console.log(e.target.value);
         this.setState({ ...this.state, [e.target.id]: e.target.value });
     };
 
@@ -96,11 +96,12 @@ class TaskModal extends Component {
     };
 
     getGroups = () => {
-        let allGroups = [this.state.group];
-        allGroups = allGroups.filter(g => { return !!g; }) // filters out undefined and all other 'falsey' values
+        let allGroups = this.props.groups ? this.props.groups.groups : [];
+        console.log(this.state);
+        console.log(this.props.groups);
         return allGroups.map((g, i) => {
             return (
-                <option key={`${g}${i}`} value={g}>{`${g}`}</option>
+            <option selected={g._id === this.state.group} key={g._id} value={g._id}>{g.name}</option>
             );
         });
     };
@@ -195,7 +196,7 @@ class TaskModal extends Component {
                                 onChange={this.onChange}
                                 id="group">
                                 {this.getGroups()}
-                                <option value="">None</option>
+                                {/* <option value="">None</option> */}
                             </select>
                         </div>
                         <div className="my-1">
@@ -325,7 +326,8 @@ class TaskModal extends Component {
 
 const mapStateToProps = state => ({
     auth: state.auth,
-    tasks: state.tasks
+    tasks: state.tasks,
+    groups: state.groups
 });
 
 export default connect(

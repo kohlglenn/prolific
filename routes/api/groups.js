@@ -4,6 +4,7 @@ const passport = require('passport');
 
 // Load Task model
 const Group = require('../../models/Group');
+const createGroup = require('./util');
 
 // @route GET api/groups/:id
 // @desc Get a group by id
@@ -29,22 +30,14 @@ router.get(
     }
 );
 
+
 // @route POST api/groups/create
 // @desc Creates a new group
 // @access Private
 router.post(
     "/create",
-    // passport.authenticate("jwt", { session: false }),
-    (req, res) => {
-        const NEW_GROUP = new Group({
-            name: req.body.name,
-            users: JSON.parse(req.body.users)
-        });
-
-        NEW_GROUP.save()
-            .then(group => res.json(group))
-            .catch(err => console.log(err));
-    }
+    passport.authenticate("jwt", { session: false }),
+    createGroup
 );
 
 // @route DELETE api/groups/delete/:id
@@ -52,13 +45,17 @@ router.post(
 // @access Private
 router.delete(
     "/delete/:id",
-    passport.authenticate("jwt", { session: false }),
+    // passport.authenticate("jwt", { session: false }),
     (req, res) => {
 
         Group.findById(req.params.id).then(group => {
+            if (group.name === 'root') {
+                // TODO: Need to add logic that lets you delete root group if user no longer exists
+                return Promise.reject("Cannot delete root group");
+            }
             return group.remove();
         }).then(() => res.json({ success: true }))
-            .catch(err => res.json({ success: false }));
+            .catch(err => res.json(err));
     }
 );
 

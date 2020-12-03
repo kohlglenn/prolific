@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
-import { getTasks, updateTask, deleteTask } from '../../actions/taskActions';
-import { COLORS, incrementProgress } from '../constants';
-import { fullDateStringToYyyymmdd, fullDateStringToHourMinPm } from '../../utils/DateUtil';
-import { truncate } from '../../utils/StringUtil';
+import { getTasks, updateTask, deleteTask, createTask } from '../../actions/taskActions';
+import { getGroups } from '../../actions/groupActions';
+import { COLORS, progress, priority, bucket, incrementProgress } from '../constants';
+import { getDate, yyyymmddToDate, dateToYyyymmdd, dateToHhmm, yyyymmddhhmmToDate, fullDateStringToYyyymmdd, fullDateStringToHourMinPm} from '../../utils/DateUtil';
 import PropTypes from 'prop-types';
 import Draggable from 'react-draggable';
 
@@ -427,10 +427,11 @@ class InputResizer extends Component {
   }
 
   onChange = e => {
-    if (e.target.value.length > this.props.value.length) {
-      this.setState({width: this.state.width + FONT_SIZE});
-    } else if (e.target.value.length < this.props.value.length) {
-      this.setState({width: Math.max(this.props.minWidth, this.state.width - FONT_SIZE)});
+    let diffInChars = e.target.value.length - this.props.value.length;
+    if (diffInChars > 0) {
+      this.setState({width: this.state.width + diffInChars * FONT_SIZE});
+    } else if (diffInChars < 0) {
+      this.setState({width: Math.max(this.props.minWidth, this.state.width + diffInChars * FONT_SIZE)});
     }
     this.props.onChange(e);
   }
@@ -478,6 +479,7 @@ class BulletList extends Component {
       taskValues.forEach(t => Object.assign(taskValueObj, t));
       this.setState({...this.state, ...taskValueObj});
     });
+    this.props.getGroups(this.props.auth.user.id);
     let myFilter = {};
     for (const h of HEADERS) {
       myFilter[h.key] = {};
@@ -557,28 +559,20 @@ class BulletList extends Component {
     }
   }
 
-  /**
-   * TODO
-   * make tasks look like items on a line of paper
-   * on click or on select make tasks fields editable (hard!) -- may need to come up with custom calendar??
-   * Look at external calendar libraries
-   * Add ability for draggable columns
-   */
   renderTaskRow = t => {
     const editVisbile = `${t._id}editVisible`;
     return (
       <tr key={t._id}
         tabIndex={0}
         onBlur={e => this.taskRowOnBlur(e, t)}
-        className="hover:bg-blue-100 cursor-pointer border-b border-blue-300 outline-none"
-        onClick={(e) => { this.startEdit(t, e) }}
+        className="hover:bg-blue-100 border-b border-blue-300 outline-none"
         onMouseOver={() => this.setState({...this.state, [editVisbile]: true})}
         onMouseOut={() => this.setState({...this.state, [editVisbile]: false})}>
         <td
           className="px-4 py-2">
           <div className="flex flex-row"
             onClick={e => this.updateProgress(t, e)}>
-            <ProgressIcon className="hover:opacity-50" id={"progressIcon"} progress={this.state[`${t._id}progress`]} />
+            <ProgressIcon className="hover:opacity-50 cursor-pointer" id={"progressIcon"} progress={this.state[`${t._id}progress`]} />
             <span className="ml-2 whitespace-no-wrap">{this.state[`${t._id}progress`]}</span>
           </div>
         </td>
@@ -587,12 +581,13 @@ class BulletList extends Component {
             <InputResizer
               id={`${t._id}title`}
               onChange={e => this.inlineTaskOnChange(e, t)}
-              className="whitespace-no-wrap w-auto"
+              className={`${this.state[editVisbile] ? "bg-blue-100" : ""} whitespace-no-wrap w-auto pl-1`}
               value={this.state[`${t._id}title`]}
               width={FONT_SIZE*t.title.length}
               minWidth={20} />
               <div
-              className={`${this.state[editVisbile] ? "opacity-100" : "opacity-0"} h-full w-6 flex items-center justify-center absolute top-0 right-0`}>
+              className={`${this.state[editVisbile] ? "opacity-100" : "opacity-0"} h-full w-6 flex items-center justify-center absolute cursor-pointer top-0 right-0`}
+              onClick={(e) => { this.startEdit(t, e) }}>
                 <AiOutlineEdit className="hover:opacity-75" size={20} color={COLORS.gray500}/>
               </div>
           </div>
@@ -683,12 +678,12 @@ class BulletList extends Component {
 
     return (
       <div
-        className="relative cursor-pointer outline-none"
+        className="relative cursor-pointer outline-none flex items-start"
         onClick={e => this.toggleSort(e, sortKey)}
         onBlur={this.headerOnBlur}
         tabIndex={0}>
         <span
-          className="pr-12 whitespace-no-wrap">
+          className="pr-12 whitespace-no-wrap ml-4">
           {name}
         </span>
         {isFilterOpen
@@ -832,18 +827,52 @@ class BulletList extends Component {
             :
             <tbody>{taskList}</tbody>
           }
+          <tfoot>
+            <tr className="hover:bg-blue-100 border-b border-blue-300 outline-none h-10">
+              <td colSpan={100}>
+                <div className="relative cursor-pointer"
+                onClick={e => this._createTask(e)}>
+                  <div className="absolute top-0 left-0 w-6 h-full justify-items-center items-center">
+                    <AiOutlinePlus size={20} />
+                  </div>
+                  <span className="pl-6">Click to quick add task</span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     );
+  }
+
+  _createTask = e => {
+    let date = getDate();
+    let task = { 
+        title: "New Task",
+        owner: this.props.auth.user.id,
+        startDate: date, 
+        priority: priority.MEDIUM,
+        progress: progress.NONE,
+        bucket: bucket.NONE };
+    task = this._convertTaskDate(task);
+    this.props.createTask(task);
+  };
+
+  // converts yyyy-mm-dd and hh:mm to Date object
+  _convertTaskDate = task => {
+    task.startDate = task.startDate ? yyyymmddhhmmToDate(task.startDate, task.startTime) : undefined;
+    task.dueDate = task.dueDate ? yyyymmddhhmmToDate(task.dueDate, task.dueTime) : undefined;
+    return task;
   }
 }
 
 const mapStateToProps = state => ({
   auth: state.auth,
-  tasks: state.tasks
+  tasks: state.tasks,
+  groups: state.groups
 });
 
 export default connect(
   mapStateToProps,
-  { getTasks, updateTask, deleteTask }
+  { createTask, getTasks, updateTask, deleteTask, getGroups }
 )(BulletList);
